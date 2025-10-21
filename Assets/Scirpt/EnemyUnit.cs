@@ -50,6 +50,7 @@ public class EnemyUnit : Unit
         if (distanceToTarget <= attackRange)
         {
             Attack(target);
+            
         }
         // 2. If not, move towards the target
         else
@@ -68,7 +69,7 @@ public class EnemyUnit : Unit
 
     private void MoveTowards(PlayerUnit target)
     {
-        // ---> THIS IS WHERE YOUR ENEMY MOVEMENT LOGIC WOULD GO <---
+        
         if (characterMovement != null)
         {
             characterMovement.MoveToDestination(target.transform.position);

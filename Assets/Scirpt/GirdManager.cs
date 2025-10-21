@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
-using System.Drawing;
 
-public class GirdManager : MonoBehaviour
+
+public class GridManager : MonoBehaviour
 {
     [SerializeField] private int width, height;
     [SerializeField] private float tileSize = 1f;

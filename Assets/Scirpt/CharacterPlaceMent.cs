@@ -26,7 +26,7 @@ public class CharacterPlaceMent : MonoBehaviour
             {
                 if (hit.collider.CompareTag("Tile"))
                 {
-                    Vector3 tilePos = new Vector3(hit.collider.transform.position.x, 0.7f, hit.collider.transform.position.z);
+                    Vector3 tilePos = new Vector3(hit.collider.transform.position.x, 2.3f, hit.collider.transform.position.z);
                     GameObject characterInstance = Instantiate(Characterprefab, tilePos, Quaternion.identity);
                     
 
