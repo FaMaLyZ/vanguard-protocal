@@ -1,21 +1,35 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using System.Collections;
-
 
 public class GridManager : MonoBehaviour
 {
-    [SerializeField] private int width, height;
-    [SerializeField] private float tileSize = 3f;
-    [SerializeField] GameObject whiteTilePrefab;
-    [SerializeField] GameObject blackTilePrefab;
+    public static GridManager Instance;
 
+    public int width = 10;
+    public int height = 10;
+    public float tileSize = 3f;   // ✅ ปรับขนาด tile ได้จาก Inspector
+
+    public GameObject whiteTilePrefab;
+    public GameObject blackTilePrefab;
+
+    // เก็บตำแหน่ง world ของแต่ละ tile
+    public Dictionary<Vector2Int, Vector3> gridPositions = new Dictionary<Vector2Int, Vector3>();
+
+
+    public Dictionary<Vector2Int, Unit> occupiedTiles = new Dictionary<Vector2Int, Unit>();
+
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
-        GenerateBoard();
+        Generate();
     }
-    void GenerateBoard()
+
+    private void Generate()
     {
         for (int x = 0; x < width; x++)
         {
@@ -24,16 +38,119 @@ public class GridManager : MonoBehaviour
                 bool isWhite = (x + z) % 2 == 0;
                 GameObject prefab = isWhite ? whiteTilePrefab : blackTilePrefab;
 
-                GameObject tile = Instantiate(prefab, transform);
+                Vector3 pos = new Vector3(
+                    x * tileSize,
+                    0,
+                    z * tileSize
+                );
 
+                GameObject tile = Instantiate(prefab, pos, Quaternion.identity, transform);
                 tile.transform.localScale = Vector3.one * tileSize;
-                tile.transform.localPosition = new Vector3(x * tileSize, 0, z * tileSize);
 
-                tile.name = $"Tile {x} , {z}";
-                tile.tag = "Tile";
+                gridPositions.Add(new Vector2Int(x, z), pos);
             }
         }
-        
-        
     }
+
+    // ✅ world → grid
+    public Vector2Int WorldToGrid(Vector3 worldPos)
+    {
+        int x = Mathf.RoundToInt(worldPos.x / tileSize);
+        int z = Mathf.RoundToInt(worldPos.z / tileSize);
+        return new Vector2Int(x, z);
+    }
+
+    // ✅ grid → world
+    public Vector3 GridToWorld(Vector2Int gridPos)
+    {
+        return new Vector3(gridPos.x * tileSize, 0, gridPos.y * tileSize);
+    }
+
+
+    // ✅ ช่องนี้ว่างไหม?
+    public bool IsTileFree(Vector2Int gridPos)
+    {
+        return !occupiedTiles.ContainsKey(gridPos);
+    }
+
+    // ✅ จองช่อง
+    public void OccupyTile(Vector2Int gridPos, Unit unit)
+    {
+        occupiedTiles[gridPos] = unit;
+    }
+
+    // ✅ เคลียร์ช่อง
+    public void FreeTile(Vector2Int gridPos)
+    {
+        if (occupiedTiles.ContainsKey(gridPos))
+            occupiedTiles.Remove(gridPos);
+    }
+    // อยู่ในคลาส GridManager
+    public bool InBounds(Vector2Int g)
+    {
+        return g.x >= 0 && g.x < width && g.y >= 0 && g.y < height;
+    }
+
+    // เพื่อนบ้าน 4 ทิศ
+    public List<Vector2Int> GetNeighbors4(Vector2Int g)
+    {
+        var n = new List<Vector2Int>(4)
+    {
+        new Vector2Int(g.x + 1, g.y),
+        new Vector2Int(g.x - 1, g.y),
+        new Vector2Int(g.x, g.y + 1),
+        new Vector2Int(g.x, g.y - 1),
+    };
+        // เฉพาะที่ยังอยู่ในกระดาน
+        n.RemoveAll(p => !InBounds(p));
+        return n;
+    }
+
+    // หา "ช่องว่าง" ที่ใกล้ที่สุดรอบๆ center (ขยายรัศมีทีละชั้น)
+    public bool TryFindNearestFreeTile(Vector2Int center, Vector2Int preferFrom, int maxRadius, out Vector2Int result)
+    {
+        // ชั้นแรก: รอบเป้าหมายก่อน (ระยะ 1)
+        var candidates = new List<Vector2Int>();
+        for (int r = 1; r <= maxRadius; r++)
+        {
+            candidates.Clear();
+
+            for (int dx = -r; dx <= r; dx++)
+            {
+                int dy = r - Mathf.Abs(dx);
+
+                // จุดบน "ขอบรูปสี่เหลี่ยมข้าวหลามตัด" ระยะ r
+                var p1 = new Vector2Int(center.x + dx, center.y + dy);
+                var p2 = new Vector2Int(center.x + dx, center.y - dy);
+
+                if (dy == 0)
+                {
+                    if (InBounds(p1) && IsTileFree(p1)) candidates.Add(p1);
+                }
+                else
+                {
+                    if (InBounds(p1) && IsTileFree(p1)) candidates.Add(p1);
+                    if (InBounds(p2) && IsTileFree(p2)) candidates.Add(p2);
+                }
+            }
+
+            if (candidates.Count > 0)
+            {
+                // เลือกตัวที่ "ใกล้ศัตรู" มากที่สุด เพื่อให้เดินสั้น/ไม่อ้อมเกิน
+                candidates.Sort((a, b) =>
+                {
+                    int da = Mathf.Abs(a.x - preferFrom.x) + Mathf.Abs(a.y - preferFrom.y);
+                    int db = Mathf.Abs(b.x - preferFrom.x) + Mathf.Abs(b.y - preferFrom.y);
+                    return da.CompareTo(db);
+                });
+
+                result = candidates[0];
+                return true;
+            }
+        }
+
+        result = default;
+        return false;
+    }
+
 }

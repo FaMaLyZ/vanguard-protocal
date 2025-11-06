@@ -1,76 +1,92 @@
-using UnityEngine;
+﻿using System.Collections;
 using System.Collections.Generic;
-using TMPro;
+using UnityEngine;
 
 public class CharacterMovement : MonoBehaviour
 {
-    [SerializeField] public float moveSpeed = 5f;
+    public float moveSpeed = 5f;
+
     private Queue<Vector3> path = new Queue<Vector3>();
     private bool isMoving = false;
+    public bool IsMoving => isMoving;
 
+
+    private Vector2Int currentGridPos;
+    private float unitHeight;   // Y เดิม
+
+    private void Start()
+    {
+        unitHeight = transform.position.y;
+        currentGridPos = GridManager.Instance.WorldToGrid(transform.position);
+        // ไม่ Occupy ที่นี่ เพราะ Unit.Start ทำแล้ว
+    }
 
     private void Update()
     {
-        if (!isMoving ) return;
+        if (!isMoving) return;
 
-        if ( path.Count > 0 )
+        if (path.Count > 0)
         {
-            Vector3 targetPos = path.Peek();
-            transform.position = Vector3.MoveTowards(transform.position,targetPos,moveSpeed * Time.deltaTime);
+            Vector3 target = path.Peek();
+            transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
 
-            if(Vector3.Distance(transform.position,targetPos) < 0.01f )
+            Vector2 cur2 = new Vector2(transform.position.x, transform.position.z);
+            Vector2 tgt2 = new Vector2(target.x, target.z);
+
+            if (Vector2.Distance(cur2, tgt2) < 0.05f)
             {
-                transform.position = targetPos;
+                transform.position = target;  // snap
                 path.Dequeue();
             }
-
-
         }
         else
         {
-            transform.position = SnapToGrid(transform.position);
-
             isMoving = false;
+
+            // เคลียร์ช่องเก่า → อัปเดต → จองช่องใหม่
+            GridManager.Instance.FreeTile(currentGridPos);
+            currentGridPos = GridManager.Instance.WorldToGrid(transform.position);
+            GridManager.Instance.OccupyTile(currentGridPos, GetComponent<Unit>());
         }
-        
     }
-    public void MoveToDestination(Vector3 targetPos)
+
+    public IEnumerator WaitUntilMoveFinish()
     {
+        while (isMoving)
+            yield return null;
+    }
+
+    public void MoveToGrid(Vector2Int targetGrid)
+    {
+        if (!GridManager.Instance.IsTileFree(targetGrid))
+        {
+            Debug.Log("Tile occupied. Cannot move!");
+            return;
+        }
+
         path.Clear();
 
+        Vector2Int start = currentGridPos;
+        Vector2Int end = targetGrid;
 
-        Vector3 startPos = SnapToGrid(transform.position);
-        Vector3 endPos = SnapToGrid(targetPos);
-
-        int currentX = Mathf.RoundToInt(startPos.x);
-        int currentZ = Mathf.RoundToInt(startPos.z);
-        int targetX = Mathf.RoundToInt(endPos.x);
-        int targetZ = Mathf.RoundToInt(endPos.z);
-
-        while (currentX != targetX || currentZ != targetZ)
+        // เดินทีละช่อง (4 ทิศแบบง่าย: x แล้ว z)
+        while (start.x != end.x)
         {
-            if (currentX != targetX)
-            {
-                currentX += (int)Mathf.Sign(targetX - currentX);
-            }
-            if (currentZ != targetZ)
-            {
-                currentZ += (int)Mathf.Sign(targetZ - currentZ);
-            }
-            path.Enqueue(new Vector3(currentX, startPos.y, currentZ));
+            start.x += (end.x > start.x) ? 1 : -1;
+            Vector3 wp = GridManager.Instance.GridToWorld(start);
+            wp.y = unitHeight;
+            path.Enqueue(wp);
         }
-        if (path.Count > 0)
+
+        while (start.y != end.y)
         {
-            isMoving = true;
+            start.y += (end.y > start.y) ? 1 : -1;
+            Vector3 wp = GridManager.Instance.GridToWorld(start);
+            wp.y = unitHeight;
+            path.Enqueue(wp);
         }
-    }
-    private Vector3 SnapToGrid(Vector3 pos)
-    {
-        return new Vector3(
-            Mathf.Round(pos.x),
-            transform.position.y,
-            Mathf.Round(pos.z)
-        );
+
+        if (path.Count > 0) isMoving = true;
     }
 
 

@@ -1,80 +1,53 @@
-// PlayerUnit.cs (Modified)
-using System.Security.Cryptography;
+// PlayerUnit.cs
 using UnityEngine;
 
 public class PlayerUnit : Unit
 {
-    
     [Header("Dependencies")]
-    public GameObject projectilePrefab; // Assign a simple sphere/capsule prefab in the Inspector
-    private CharacterMovement characterMovement;
+    public GameObject projectilePrefab;
+    public CharacterMovement characterMovement;
 
-    private void Awake()
+    protected override void Start()
     {
-        characterMovement = GetComponent<CharacterMovement>();
+        base.Start();
+        if (!characterMovement) characterMovement = GetComponent<CharacterMovement>();
+        GameManager.Instance?.RegisterPlayerUnit(this);
     }
 
-    private void Start()
+    private void OnDestroy()
     {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.RegisterPlayerUnit(this);
-        }
-    }
-    void OnDestroy()
-    {
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.RemovePlayerUnit(this);
-        }
+        GameManager.Instance?.RemovePlayerUnit(this);
     }
 
     public void Attack(EnemyUnit target)
     {
-        if (hasTakenAction || GameManager.Instance.CurrentState != GameState.PlayerTurn)
-        {
-            Debug.Log("Cannot attack: Not your turn or you've already acted.");
-            return;
-        }
-
-        if (projectilePrefab == null)
+        if (hasTakenAction || GameManager.Instance.CurrentState != GameState.PlayerTurn) return;
+        if (!projectilePrefab)
         {
             Debug.LogError("Projectile Prefab is not assigned on " + name);
             return;
         }
 
-        Debug.Log($"{gameObject.name} fires at {target.name}!");
-
-        // Spawn the projectile and initialize it
         GameObject projectileGO = Instantiate(projectilePrefab, transform.position + Vector3.up, Quaternion.identity);
         Projectile projectile = projectileGO.GetComponent<Projectile>();
-        if (projectile != null)
-        {
-            projectile.Initialize(target, attackDamage);
-        }
+        if (projectile != null) projectile.Initialize(target, attackDamage);
 
         hasTakenAction = true;
     }
 
-    public void Move(Vector3 destination)
+    // เผื่อมีการเรียก move แบบ world จากที่อื่น
+    public void Move(Vector3 worldDestination)
     {
-        if (hasTakenAction || GameManager.Instance.CurrentState != GameState.PlayerTurn)
-        {
-            Debug.Log("Cannot move: Not your turn or you've already acted.");
-            return;
-        }
+        if (hasTakenAction || GameManager.Instance.CurrentState != GameState.PlayerTurn) return;
+        Vector2Int grid = GridManager.Instance.WorldToGrid(worldDestination);
+        characterMovement.MoveToGrid(grid);
+        hasTakenAction = true;
+    }
 
-        if (characterMovement != null)
-        {
-            characterMovement.MoveToDestination(destination);
-        }
-        else
-        {
-            transform.position = destination;
-            Debug.LogWarning($"CharacterMovement script not found on {name}. Teleporting instead.");
-        }
-
-        Debug.Log($"{gameObject.name} moves to {destination}.");
+    public void MoveToGrid(Vector2Int grid)
+    {
+        if (hasTakenAction || GameManager.Instance.CurrentState != GameState.PlayerTurn) return;
+        characterMovement.MoveToGrid(grid);
         hasTakenAction = true;
     }
 }

@@ -9,7 +9,6 @@ public class PlayerInputController : MonoBehaviour
     private Camera _mainCamera;
     private PlayerUnit _selectedUnit;
 
-    // ✅ โหมดคำสั่งจากปุ่มไอคอน
     public enum ActionMode { None, Move, Attack }
     public ActionMode CurrentMode { get; private set; } = ActionMode.None;
 
@@ -21,13 +20,13 @@ public class PlayerInputController : MonoBehaviour
         _mainCamera = Camera.main;
     }
 
-    // เรียกจาก UI ปุ่ม
     public void SetMoveMode() { CurrentMode = ActionMode.Move; }
     public void SetAttackMode() { CurrentMode = ActionMode.Attack; }
     public void ClearMode() { CurrentMode = ActionMode.None; }
 
     void Update()
     {
+        // รับอินพุตเฉพาะตอน PlayerTurn (ช่วง Placement อยากให้วางยูนิตใช้สคริปต์วาง)
         if (GameManager.Instance.CurrentState != GameState.PlayerTurn)
         {
             _selectedUnit = null;
@@ -35,10 +34,7 @@ public class PlayerInputController : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(0))
-        {
-            HandleClick();
-        }
+        if (Input.GetMouseButtonDown(0)) HandleClick();
     }
 
     private void HandleClick()
@@ -46,53 +42,53 @@ public class PlayerInputController : MonoBehaviour
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out RaycastHit hit)) return;
 
-        // 1) ถ้ายังไม่เลือกยูนิต: ลองเลือกก่อน
+        // เลือกยูนิตก่อนถ้ายังไม่ได้เลือก
         if (_selectedUnit == null)
         {
             if (hit.collider.TryGetComponent(out PlayerUnit clickedUnit))
             {
-                if (!clickedUnit.hasTakenAction)
-                {
-                    _selectedUnit = clickedUnit;
-                }
+                if (!clickedUnit.hasTakenAction) _selectedUnit = clickedUnit;
                 return;
             }
-
         }
 
-        // 2) มี unit แล้ว → ทำตามโหมด
         switch (CurrentMode)
         {
             case ActionMode.Move:
-                // คลิกพื้นเพื่อเดิน
-                if (((1 << hit.collider.gameObject.layer) & groundLayerMask) != 0)
                 {
-                    _selectedUnit.Move(hit.point);
+                    Vector2Int grid = GridManager.Instance.WorldToGrid(hit.point);
+                    if (!GridManager.Instance.IsTileFree(grid))
+                    {
+                        Debug.Log("Cannot move: tile is occupied.");
+                        return; // อย่าตัดเทิร์น/อย่าเคลียร์โหมด
+                    }
+                    _selectedUnit.MoveToGrid(grid);
                     _selectedUnit = null;
                     ClearMode();
+                    break;
                 }
-                break;
 
             case ActionMode.Attack:
-                // คลิกศัตรูเพื่อยิง
-                if (hit.collider.TryGetComponent(out EnemyUnit enemyTarget))
                 {
-                    _selectedUnit.Attack(enemyTarget);
-                    _selectedUnit = null;
-                    ClearMode();
+                    if (hit.collider.TryGetComponent(out EnemyUnit enemyTarget))
+                    {
+                        _selectedUnit.Attack(enemyTarget);
+                        _selectedUnit = null;
+                        ClearMode();
+                    }
+                    break;
                 }
-                break;
 
             case ActionMode.None:
-                // โหมดว่าง: ถ้าคลิก player คนอื่นก็เปลี่ยน selection
-                if (hit.collider.TryGetComponent(out PlayerUnit otherUnit))
                 {
-                    if (!otherUnit.hasTakenAction) _selectedUnit = otherUnit;
-                    return;
+                    if (hit.collider.TryGetComponent(out PlayerUnit otherUnit))
+                    {
+                        if (!otherUnit.hasTakenAction) _selectedUnit = otherUnit;
+                        return;
+                    }
+                    _selectedUnit = null;
+                    break;
                 }
-                // หรือคลิกพื้นเฉย ๆ → ยกเลิกเลือก
-                _selectedUnit = null;
-                break;
         }
     }
 }

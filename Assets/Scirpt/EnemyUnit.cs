@@ -1,106 +1,175 @@
 ﻿// EnemyUnit.cs
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyUnit : Unit
 {
     public float attackRange = 1f;
-    private CharacterMovement characterMovement;
+    public CharacterMovement characterMovement;
 
     private void Awake()
     {
         characterMovement = GetComponent<CharacterMovement>();
     }
+
     private void Start()
-
     {
-        if (GameManager.Instance !=null)
-        {
-            GameManager.Instance.RegisterEnemyUnit(this);
-        }
-    }
-    void OnDestroy()
-    {
-        // Tell the GameManager that this unit has been removed
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.RemoveEnemyUnit(this);
-        }
+        GameManager.Instance?.RegisterEnemyUnit(this);
     }
 
-    /// <summary>
-    /// This contains the AI logic for the enemy's turn.
-    /// </summary>
+    private void OnDestroy()
+    {
+        GameManager.Instance?.RemoveEnemyUnit(this);
+    }
+
     public void TakeTurn()
     {
         if (hasTakenAction) return;
 
-        // Find the closest player unit to attack
-        PlayerUnit target = GameManager.Instance.GetClosestPlayerUnit(transform.position);
-
-        if (target == null)
+        // ✅ ตรวจ player ที่อยู่ติดกันก่อน (ระยะประชิด)
+        PlayerUnit adj = GetAdjacentPlayer();
+        if (adj != null)
         {
-            Debug.Log($"{gameObject.name} has no targets left.");
+            Attack(adj);
+            Debug.Log($"{name} attacks {adj.name}!  HP Remaining = {adj.currentHealth}");
             hasTakenAction = true;
             return;
         }
 
-        float distanceToTarget = Vector3.Distance(transform.position, target.transform.position);
+        // ✅ ถ้าไม่มีเป้าหมายประชิด → เดินเข้าใกล้
+        PlayerUnit target = GameManager.Instance.GetClosestPlayerUnit(transform.position);
+        if (target == null)
+        {
+            hasTakenAction = true;
+            return;
+        }
 
-        // 1. Check if target is in attack range
-        if (distanceToTarget <= attackRange)
-        {
-            Attack(target);
-            
-        }
-        // 2. If not, move towards the target
-        else
-        {
-            MoveTowards(target);
-        }
+        MoveTowards(target);
 
         hasTakenAction = true;
     }
 
+
     private void Attack(PlayerUnit target)
     {
-        Debug.Log($"{gameObject.name} attacks {target.name}!");
         target.TakeDamage(attackDamage);
+        Debug.Log($"{name} attacks {target.name}!");
     }
 
     private void MoveTowards(PlayerUnit target)
     {
-        Vector3 current = transform.position;
-        Vector3 targetPos = target.transform.position;
+        var grid = GridManager.Instance;
+        Vector2Int enemyGrid = grid.WorldToGrid(transform.position);
+        Vector2Int targetGrid = grid.WorldToGrid(target.transform.position);
 
-        // ทำงานบนระนาบ XZ เท่านั้น
-        Vector2 cur2 = new Vector2(current.x, current.z);
-        Vector2 tgt2 = new Vector2(targetPos.x, targetPos.z);
-
-        float distance = Vector2.Distance(cur2, tgt2);
-
-        // ✅ เดินไม่เกิน 3 tile
-        float maxStep = 3f;
-
-        // ถ้าห่างน้อยกว่า 3 ก็เดินถึงได้เลย
-        if (distance <= maxStep)
+        // หาช่องว่างรอบเป้าหมายถ้าช่องเป้าหมายถูกยึด
+        Vector2Int destGrid = targetGrid;
+        if (!grid.IsTileFree(destGrid))
         {
-            // Snap จุดปลายทางให้ตรงกลาง tile
-            Vector3 snapped = new Vector3(Mathf.Round(targetPos.x), current.y, Mathf.Round(targetPos.z));
-            characterMovement.MoveToDestination(snapped);
-        }
-        else
-        {
-            // ✅ ถ้าห่างเกิน 3 → เดินไปในทิศทาง target แต่ระยะ = 3 tile
-            Vector2 dir = (tgt2 - cur2).normalized;    // ทิศทางไปหาเป้าหมาย
-            Vector2 step = cur2 + dir * maxStep;
-
-            // Snap ตำแหน่งเป้าหมายใหม่ให้อยู่ตรงกลาง tile
-            Vector3 newPos = new Vector3(Mathf.Round(step.x), current.y, Mathf.Round(step.y));
-
-            characterMovement.MoveToDestination(newPos);
+            if (!grid.TryFindNearestFreeTile(targetGrid, enemyGrid, 3, out destGrid))
+            {
+                Debug.Log($"{name}: No reachable tile.");
+                return;
+            }
         }
 
-        Debug.Log($"{name} moves up to 3 tiles toward {target.name}");
+        // หาเส้นทางด้วย BFS
+        List<Vector2Int> path = FindPath(enemyGrid, destGrid);
+
+        if (path == null || path.Count == 0)
+        {
+            Debug.Log($"{name}: No path to target.");
+            return;
+        }
+
+        // ✅ จำกัดการเดินสูงสุด 3 ช่อง
+        int maxStep = Mathf.Min(3, path.Count);
+
+        // nextStep คือเป้าหมายสุดท้ายของ "3 ช่องแรก"
+        Vector2Int nextStep = path[maxStep - 1];
+
+        characterMovement.MoveToGrid(nextStep);
+
+        Debug.Log($"{name} moves up to {maxStep} tiles → {nextStep}");
     }
+
+    List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal)
+    {
+        Queue<Vector2Int> frontier = new Queue<Vector2Int>();
+        frontier.Enqueue(start);
+
+        Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        cameFrom[start] = start;
+
+        var grid = GridManager.Instance;
+
+        while (frontier.Count > 0)
+        {
+            var current = frontier.Dequeue();
+
+            if (current == goal)
+                break;
+
+            foreach (var next in grid.GetNeighbors4(current))
+            {
+                // ห้ามเดินทับ
+                if (!grid.IsTileFree(next) && next != goal)
+                    continue;
+
+                if (!cameFrom.ContainsKey(next))
+                {
+                    frontier.Enqueue(next);
+                    cameFrom[next] = current;
+                }
+            }
+        }
+
+        // reconstruct
+        List<Vector2Int> path = new List<Vector2Int>();
+        Vector2Int cur = goal;
+
+        // goal unreachable?
+        if (!cameFrom.ContainsKey(goal))
+            return path;
+
+        while (cur != start)
+        {
+            path.Add(cur);
+            cur = cameFrom[cur];
+        }
+
+        path.Reverse();
+        return path;
+    }
+    private PlayerUnit GetAdjacentPlayer()
+    {
+        var grid = GridManager.Instance;
+        Vector2Int myGrid = grid.WorldToGrid(transform.position);
+
+        // 4 ทิศ
+        Vector2Int[] dirs =
+        {
+        new Vector2Int( 1, 0),
+        new Vector2Int(-1, 0),
+        new Vector2Int( 0, 1),
+        new Vector2Int( 0,-1)
+    };
+
+        foreach (var d in dirs)
+        {
+            Vector2Int check = myGrid + d;
+
+            if (!grid.InBounds(check)) continue;
+
+            if (grid.occupiedTiles.TryGetValue(check, out Unit unit))
+            {
+                if (unit is PlayerUnit pu)
+                    return pu;
+            }
+        }
+
+        return null;
+    }
+
 
 }
