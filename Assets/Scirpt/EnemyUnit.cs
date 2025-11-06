@@ -1,4 +1,4 @@
-// EnemyUnit.cs
+﻿// EnemyUnit.cs
 using UnityEngine;
 
 public class EnemyUnit : Unit
@@ -69,18 +69,38 @@ public class EnemyUnit : Unit
 
     private void MoveTowards(PlayerUnit target)
     {
-        
-        if (characterMovement != null)
+        Vector3 current = transform.position;
+        Vector3 targetPos = target.transform.position;
+
+        // ทำงานบนระนาบ XZ เท่านั้น
+        Vector2 cur2 = new Vector2(current.x, current.z);
+        Vector2 tgt2 = new Vector2(targetPos.x, targetPos.z);
+
+        float distance = Vector2.Distance(cur2, tgt2);
+
+        // ✅ เดินไม่เกิน 3 tile
+        float maxStep = 3f;
+
+        // ถ้าห่างน้อยกว่า 3 ก็เดินถึงได้เลย
+        if (distance <= maxStep)
         {
-            characterMovement.MoveToDestination(target.transform.position);
+            // Snap จุดปลายทางให้ตรงกลาง tile
+            Vector3 snapped = new Vector3(Mathf.Round(targetPos.x), current.y, Mathf.Round(targetPos.z));
+            characterMovement.MoveToDestination(snapped);
         }
         else
         {
-            Vector3 direction = (target.transform.position - transform.position).normalized;
-            transform.position += direction * moveSpeed * Time.deltaTime; // Simple move logic
-            Debug.LogWarning("CharacterMovement script not found on " + name + ". Moving manually.");
-            
+            // ✅ ถ้าห่างเกิน 3 → เดินไปในทิศทาง target แต่ระยะ = 3 tile
+            Vector2 dir = (tgt2 - cur2).normalized;    // ทิศทางไปหาเป้าหมาย
+            Vector2 step = cur2 + dir * maxStep;
+
+            // Snap ตำแหน่งเป้าหมายใหม่ให้อยู่ตรงกลาง tile
+            Vector3 newPos = new Vector3(Mathf.Round(step.x), current.y, Mathf.Round(step.y));
+
+            characterMovement.MoveToDestination(newPos);
         }
-        Debug.Log($"{gameObject.name} moves towards {target.name}.");
+
+        Debug.Log($"{name} moves up to 3 tiles toward {target.name}");
     }
+
 }

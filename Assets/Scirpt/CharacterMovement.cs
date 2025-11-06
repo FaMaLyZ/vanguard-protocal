@@ -24,9 +24,12 @@ public class CharacterMovement : MonoBehaviour
                 path.Dequeue();
             }
 
+
         }
         else
         {
+            transform.position = SnapToGrid(transform.position);
+
             isMoving = false;
         }
         
@@ -36,8 +39,8 @@ public class CharacterMovement : MonoBehaviour
         path.Clear();
 
 
-        Vector3 startPos = new Vector3(Mathf.RoundToInt(transform.position.x), transform.position.y, Mathf.RoundToInt(transform.position.z));
-        Vector3 endPos = new Vector3(Mathf.RoundToInt(targetPos.x), transform.position.y, Mathf.RoundToInt(targetPos.z));
+        Vector3 startPos = SnapToGrid(transform.position);
+        Vector3 endPos = SnapToGrid(targetPos);
 
         int currentX = Mathf.RoundToInt(startPos.x);
         int currentZ = Mathf.RoundToInt(startPos.z);
@@ -61,5 +64,14 @@ public class CharacterMovement : MonoBehaviour
             isMoving = true;
         }
     }
+    private Vector3 SnapToGrid(Vector3 pos)
+    {
+        return new Vector3(
+            Mathf.Round(pos.x),
+            transform.position.y,
+            Mathf.Round(pos.z)
+        );
+    }
+
 
 }

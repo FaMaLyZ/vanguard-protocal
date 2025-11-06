@@ -1,88 +1,98 @@
-// PlayerInputController.cs
+﻿// PlayerInputController.cs
 using UnityEngine;
 
 public class PlayerInputController : MonoBehaviour
 {
-    public LayerMask groundLayerMask; // Set this in the Inspector to your "Ground" layer
-    public LayerMask unitLayerMask;   // Set this to your "Units" layer (for both player and enemy)
+    public LayerMask groundLayerMask;
+    public LayerMask unitLayerMask;
 
     private Camera _mainCamera;
     private PlayerUnit _selectedUnit;
+
+    // ✅ โหมดคำสั่งจากปุ่มไอคอน
+    public enum ActionMode { None, Move, Attack }
+    public ActionMode CurrentMode { get; private set; } = ActionMode.None;
+
+    public PlayerUnit SelectedUnit => _selectedUnit;
+    public string SelectedUnitName => _selectedUnit ? _selectedUnit.name : "None";
 
     void Start()
     {
         _mainCamera = Camera.main;
     }
 
+    // เรียกจาก UI ปุ่ม
+    public void SetMoveMode() { CurrentMode = ActionMode.Move; }
+    public void SetAttackMode() { CurrentMode = ActionMode.Attack; }
+    public void ClearMode() { CurrentMode = ActionMode.None; }
+
     void Update()
     {
-        // CORE LOGIC: Do nothing if it's not the player's turn.
         if (GameManager.Instance.CurrentState != GameState.PlayerTurn)
         {
-            // Clear selection when turn ends
-            if (_selectedUnit != null)
-            {
-                Debug.Log("Turn ended, deselecting unit.");
-                _selectedUnit = null;
-            }
+            _selectedUnit = null;
+            ClearMode();
             return;
         }
 
-        // Handle mouse click
         if (Input.GetMouseButtonDown(0))
         {
-            HandleSelection();
+            HandleClick();
         }
     }
 
-    private void HandleSelection()
+    private void HandleClick()
     {
         Ray ray = _mainCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        if (!Physics.Raycast(ray, out RaycastHit hit)) return;
+
+        // 1) ถ้ายังไม่เลือกยูนิต: ลองเลือกก่อน
+        if (_selectedUnit == null)
         {
-            // --- Command Logic: We have a unit selected, so the next click is a command ---
-            if (_selectedUnit != null)
-            {
-                // Command: ATTACK
-                // Check if we clicked on an object with an EnemyUnit component
-                if (hit.collider.TryGetComponent(out EnemyUnit enemyTarget))
-                {
-                    _selectedUnit.Attack(enemyTarget);
-                    _selectedUnit = null; // Deselect after action
-                    return;
-                }
-
-                // Command: MOVE
-                // Check if we clicked on the ground layer
-                if (((1 << hit.collider.gameObject.layer) & groundLayerMask) != 0)
-                {
-                    _selectedUnit.Move(hit.point);
-                    _selectedUnit = null; // Deselect after action
-                    return;
-                }
-            }
-
-            // --- Selection Logic: No unit is selected, so this click is for selecting ---
-            // Check if we clicked on a PlayerUnit
             if (hit.collider.TryGetComponent(out PlayerUnit clickedUnit))
             {
-                // Don't allow selecting a unit that has already acted
-                if (clickedUnit.hasTakenAction)
-                {
-                    Debug.Log($"{clickedUnit.name} has already taken its action this turn.");
-                    _selectedUnit = null;
-                }
-                else
+                if (!clickedUnit.hasTakenAction)
                 {
                     _selectedUnit = clickedUnit;
-                    Debug.Log($"{_selectedUnit.name} selected!");
                 }
                 return;
             }
 
-            // If we click anywhere else, deselect the current unit
-            _selectedUnit = null;
-            Debug.Log("Deselected.");
+        }
+
+        // 2) มี unit แล้ว → ทำตามโหมด
+        switch (CurrentMode)
+        {
+            case ActionMode.Move:
+                // คลิกพื้นเพื่อเดิน
+                if (((1 << hit.collider.gameObject.layer) & groundLayerMask) != 0)
+                {
+                    _selectedUnit.Move(hit.point);
+                    _selectedUnit = null;
+                    ClearMode();
+                }
+                break;
+
+            case ActionMode.Attack:
+                // คลิกศัตรูเพื่อยิง
+                if (hit.collider.TryGetComponent(out EnemyUnit enemyTarget))
+                {
+                    _selectedUnit.Attack(enemyTarget);
+                    _selectedUnit = null;
+                    ClearMode();
+                }
+                break;
+
+            case ActionMode.None:
+                // โหมดว่าง: ถ้าคลิก player คนอื่นก็เปลี่ยน selection
+                if (hit.collider.TryGetComponent(out PlayerUnit otherUnit))
+                {
+                    if (!otherUnit.hasTakenAction) _selectedUnit = otherUnit;
+                    return;
+                }
+                // หรือคลิกพื้นเฉย ๆ → ยกเลิกเลือก
+                _selectedUnit = null;
+                break;
         }
     }
 }

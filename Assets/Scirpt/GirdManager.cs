@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
 
@@ -6,7 +6,7 @@ using System.Collections;
 public class GridManager : MonoBehaviour
 {
     [SerializeField] private int width, height;
-    [SerializeField] private float tileSize = 1f;
+    [SerializeField] private float tileSize = 3f;
     [SerializeField] GameObject whiteTilePrefab;
     [SerializeField] GameObject blackTilePrefab;
 
