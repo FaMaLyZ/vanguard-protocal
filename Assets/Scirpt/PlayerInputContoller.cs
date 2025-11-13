@@ -20,9 +20,31 @@ public class PlayerInputController : MonoBehaviour
         _mainCamera = Camera.main;
     }
 
-    public void SetMoveMode() { CurrentMode = ActionMode.Move; }
-    public void SetAttackMode() { CurrentMode = ActionMode.Attack; }
-    public void ClearMode() { CurrentMode = ActionMode.None; }
+    public void SetMoveMode() 
+    {
+        GridManager.Instance.ClearHighlights();
+
+        CurrentMode = ActionMode.Move; 
+        if (_selectedUnit != null)
+        {
+            ShowMovementPreview(_selectedUnit);
+        }
+    }
+    public void SetAttackMode() 
+    {
+        GridManager.Instance.ClearHighlights();
+
+        CurrentMode = ActionMode.Attack;
+        if (_selectedUnit != null)
+        {
+            ShowAttackPreview(_selectedUnit);
+        }
+    }
+    public void ClearMode() 
+    { 
+        CurrentMode = ActionMode.None;
+        GridManager.Instance.ClearHighlights();
+    }
 
     void Update()
     {
@@ -62,7 +84,19 @@ public class PlayerInputController : MonoBehaviour
                         Debug.Log("Cannot move: tile is occupied.");
                         return; // อย่าตัดเทิร์น/อย่าเคลียร์โหมด
                     }
+                    // คำนวณ movement range
+                    Vector2Int unitGrid = GridManager.Instance.WorldToGrid(_selectedUnit.transform.position);
+
+                    int range = _selectedUnit.movementRange;
+                    if (Mathf.Abs(grid.x - unitGrid.x) > range || Mathf.Abs(grid.y - unitGrid.y) > range)
+                    {
+                        Debug.Log("Tile too far, out of movement range.");
+                        return;
+                    }
+
                     _selectedUnit.MoveToGrid(grid);
+                    GridManager.Instance.ClearHighlights();
+
                     _selectedUnit = null;
                     ClearMode();
                     break;
@@ -73,6 +107,7 @@ public class PlayerInputController : MonoBehaviour
                     if (hit.collider.TryGetComponent(out EnemyUnit enemyTarget))
                     {
                         _selectedUnit.Attack(enemyTarget);
+                        GridManager.Instance.ClearHighlights();
                         _selectedUnit = null;
                         ClearMode();
                     }
@@ -91,4 +126,45 @@ public class PlayerInputController : MonoBehaviour
                 }
         }
     }
+    void ShowMovementPreview(PlayerUnit unit)
+    {
+        GridManager.Instance.ClearHighlights();
+
+        Vector2Int start = GridManager.Instance.WorldToGrid(unit.transform.position);
+        int range = unit.movementRange;
+
+        for (int dx = -range; dx <= range; dx++)
+        {
+            for (int dy = -range; dy <= range; dy++)
+            {
+                Vector2Int pos = new Vector2Int(start.x + dx, start.y + dy);
+
+                if (!GridManager.Instance.InBounds(pos)) continue;
+                if (!GridManager.Instance.IsTileFree(pos)) continue;
+
+                GridManager.Instance.HighlightTile(pos, Color.green);
+            }
+        }
+    }
+    void ShowAttackPreview(PlayerUnit unit)
+    {
+        GridManager.Instance.ClearHighlights();
+
+        Vector2Int start = GridManager.Instance.WorldToGrid(unit.transform.position);
+        int range = unit.attackRange;
+
+        for (int dx = -range; dx <= range; dx++)
+        {
+            for (int dy = -range; dy <= range; dy++)
+            {
+                Vector2Int pos = new Vector2Int(start.x + dx, start.y + dy);
+
+                if (!GridManager.Instance.InBounds(pos)) continue;
+
+                GridManager.Instance.HighlightTile(pos, Color.red);
+            }
+        }
+    }
+
+
 }

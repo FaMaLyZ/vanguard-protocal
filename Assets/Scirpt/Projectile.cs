@@ -18,22 +18,34 @@ public class Projectile : MonoBehaviour
 
     void Update()
     {
-        if (_target == null)
+        if (_target == null) { Destroy(gameObject); return; }
+
+        Vector3 dir = (_target.transform.position - transform.position).normalized;
+        float step = _speed * Time.deltaTime;
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, dir, out hit, step + 0.01f))
         {
-            // If the target died while the projectile was in the air
-            Destroy(gameObject);
-            return;
+            if (hit.collider.GetComponent<Obstacle>() != null)
+            {
+                Debug.Log("Projectile hit obstacle and is destroyed.");
+                Destroy(gameObject);
+                return;
+            }
+            if (hit.collider.GetComponent<Unit>() != null && hit.collider.GetComponent<Unit>() == _target)
+            {
+                _target.TakeDamage(_damage);
+                Destroy(gameObject);
+                return;
+            }
         }
 
-        // Move towards the target
-        Vector3 direction = (_target.transform.position - transform.position).normalized;
-        transform.position += direction * _speed * Time.deltaTime;
+        transform.position += dir * step;
 
-        // Check if we have reached the target
         if (Vector3.Distance(transform.position, _target.transform.position) < 0.5f)
         {
             _target.TakeDamage(_damage);
             Destroy(gameObject);
         }
     }
+
 }

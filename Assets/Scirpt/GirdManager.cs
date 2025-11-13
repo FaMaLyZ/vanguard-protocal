@@ -12,12 +12,19 @@ public class GridManager : MonoBehaviour
     public GameObject whiteTilePrefab;
     public GameObject blackTilePrefab;
 
+    public GameObject greenHighlightPrefab;
+    public GameObject redHighlightPrefab;
+
+    private List<GameObject> activeHighlights = new List<GameObject>();
+
+
     // เก็บตำแหน่ง world ของแต่ละ tile
     public Dictionary<Vector2Int, Vector3> gridPositions = new Dictionary<Vector2Int, Vector3>();
 
 
     public Dictionary<Vector2Int, Unit> occupiedTiles = new Dictionary<Vector2Int, Unit>();
 
+    public Dictionary<Vector2Int, GameObject> obstacleTiles = new Dictionary<Vector2Int, GameObject>();
 
     private void Awake()
     {
@@ -70,7 +77,9 @@ public class GridManager : MonoBehaviour
     // ✅ ช่องนี้ว่างไหม?
     public bool IsTileFree(Vector2Int gridPos)
     {
-        return !occupiedTiles.ContainsKey(gridPos);
+        if (occupiedTiles.ContainsKey(gridPos)) return false;
+        if (obstacleTiles.ContainsKey(gridPos)) return false;
+        return true;
     }
 
     // ✅ จองช่อง
@@ -82,8 +91,7 @@ public class GridManager : MonoBehaviour
     // ✅ เคลียร์ช่อง
     public void FreeTile(Vector2Int gridPos)
     {
-        if (occupiedTiles.ContainsKey(gridPos))
-            occupiedTiles.Remove(gridPos);
+        if (occupiedTiles.ContainsKey(gridPos)) occupiedTiles.Remove(gridPos);
     }
     // อยู่ในคลาส GridManager
     public bool InBounds(Vector2Int g)
@@ -152,5 +160,39 @@ public class GridManager : MonoBehaviour
         result = default;
         return false;
     }
+    public bool IsObstacleAt(Vector2Int gridPos)
+    {
+        return obstacleTiles.ContainsKey(gridPos);
+    }
+    public void OccupyWithObstacle(Vector2Int gridPos, GameObject obstacle)
+    {
+        obstacleTiles[gridPos] = obstacle;
+    }
+    public void FreeObstacle(Vector2Int gridPos)
+    {
+        if (obstacleTiles.ContainsKey(gridPos)) obstacleTiles.Remove(gridPos);
+    }
+    public void HighlightTile(Vector2Int gridPos, Color color)
+    {
+        GameObject prefab = color == Color.red ? redHighlightPrefab : greenHighlightPrefab;
+
+        Vector3 world = GridToWorld(gridPos);
+        world.y += 0.05f; // ยกขึ้นนิดหน่อย
+
+        GameObject h = Instantiate(prefab, world, Quaternion.identity);
+        activeHighlights.Add(h);
+
+        var hl = h.GetComponent<TileHighlight>();
+        if (hl != null) hl.gridPos = gridPos;
+    }
+    public void ClearHighlights()
+    {
+        foreach (var h in activeHighlights)
+            if (h != null) Destroy(h);
+
+        activeHighlights.Clear();
+    }
+
+
 
 }

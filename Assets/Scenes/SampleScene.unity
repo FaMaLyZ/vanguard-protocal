@@ -713,6 +713,53 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 1
+--- !u!1 &518576688
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 518576690}
+  - component: {fileID: 518576689}
+  m_Layer: 0
+  m_Name: ObstacleSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &518576689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 518576688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caa0c13f1f49b7b46b92660825313611, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  obstaclePrefab: {fileID: 6803324778022165723, guid: 0d6fde3ad71bc0045b3049dadafa2dae, type: 3}
+  obstacleCount: 5
+  obstacleHeight: 20
+--- !u!4 &518576690
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 518576688}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 11.006545, y: -26.760887, z: -7.0511403}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &987281790
 GameObject:
   m_ObjectHideFlags: 0
@@ -1546,6 +1593,8 @@ MonoBehaviour:
   tileSize: 3
   whiteTilePrefab: {fileID: 6285504319771794136, guid: 012c0b57c65ebb941b616309dc007ac9, type: 3}
   blackTilePrefab: {fileID: 5356305045300675571, guid: b89be8289c43ca74a926c4a213bf712d, type: 3}
+  greenHighlightPrefab: {fileID: 1348109216909913035, guid: d92069cd4d2a40042bb8cca3ac227747, type: 3}
+  redHighlightPrefab: {fileID: 1348109216909913035, guid: 76d054287d8d7524b973814bbc691b56, type: 3}
 --- !u!4 &1527995062
 Transform:
   m_ObjectHideFlags: 0
@@ -1574,3 +1623,4 @@ SceneRoots:
   - {fileID: 84012957}
   - {fileID: 357424301}
   - {fileID: 1462580602}
+  - {fileID: 518576690}

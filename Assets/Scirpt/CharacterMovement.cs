@@ -88,6 +88,31 @@ public class CharacterMovement : MonoBehaviour
 
         if (path.Count > 0) isMoving = true;
     }
+    public List<Vector2Int> GetReachableTiles(Vector2Int start, int range)
+    {
+        var grid = GridManager.Instance;
+        List<Vector2Int> reachable = new List<Vector2Int>();
+
+        for (int dx = -range; dx <= range; dx++)
+        {
+            for (int dy = -range; dy <= range; dy++)
+            {
+                Vector2Int pos = new Vector2Int(start.x + dx, start.y + dy);
+
+                if (!grid.InBounds(pos))
+                    continue;
+
+                // ห้ามเดินทับ unit / obstacle
+                if (!grid.IsTileFree(pos))
+                    continue;
+
+                reachable.Add(pos);
+            }
+        }
+
+        return reachable;
+    }
+
 
 
 }
