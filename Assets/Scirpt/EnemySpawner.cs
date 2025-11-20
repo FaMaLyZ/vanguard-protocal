@@ -1,9 +1,17 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemyPrefab;
     public float enemyHeight = 2.5f;
+
+    public GameObject spawnMarkerPrefab;
+    private List<GameObject> spawnMarkers = new List<GameObject>();
+
+    // ตำแหน่ง spawn แบบ FIX (อยากแก้ตรงนี้)
+    public List<Vector2Int> fixedSpawnPoints = new List<Vector2Int>();
+
 
     public void SpawnEnemy()
     {
@@ -13,14 +21,8 @@ public class EnemySpawner : MonoBehaviour
             return;
         }
 
-        // พยายามหา tile ว่าง
-        const int MAX_TRIES = 50;
-        for (int i = 0; i < MAX_TRIES; i++)
+        foreach (var gridPos in fixedSpawnPoints)
         {
-            int x = Random.Range(0, GridManager.Instance.width);
-            int z = Random.Range(0, GridManager.Instance.height);
-            Vector2Int gridPos = new Vector2Int(x, z);
-
             if (!GridManager.Instance.IsTileFree(gridPos)) continue;
 
             Vector3 worldPos = GridManager.Instance.GridToWorld(gridPos);
@@ -28,17 +30,44 @@ public class EnemySpawner : MonoBehaviour
 
             GameObject enemyGo = Instantiate(enemyPrefab, worldPos, Quaternion.identity);
 
-            // Occupy tile ทันที (Unit.Start จะทำซ้ำแต่ไม่เป็นไร/หรือจะลบก็ได้)
             GridManager.Instance.OccupyTile(gridPos, enemyGo.GetComponent<Unit>());
+            GameManager.Instance.RegisterEnemyUnit(enemyGo.GetComponent<EnemyUnit>());
 
-            EnemyUnit newEnemy = enemyGo.GetComponent<EnemyUnit>();
-            if (newEnemy != null) GameManager.Instance.RegisterEnemyUnit(newEnemy);
-            else Debug.LogError("Spawned prefab is missing EnemyUnit component!");
-
-            Debug.Log($"Enemy spawned at Grid {gridPos} → World {worldPos}");
-            return;
+            Debug.Log("Enemy Spawned at " + gridPos);
         }
-
-        Debug.LogWarning("No free tile to spawn enemy.");
     }
+
+    public void ShowSpawnMarkers()
+    {
+        ClearSpawnMarkers();
+
+        foreach (var pos in fixedSpawnPoints)
+        {
+            Vector3 world = GridManager.Instance.GridToWorld(pos);
+
+            // วางบนผิว tile (Cube สูง tileSize → ผิวบน = tileSize * 0.5)
+            world.y = GridManager.Instance.tileSize * 0.51f;
+
+            GameObject marker = Instantiate(spawnMarkerPrefab, world, Quaternion.Euler(90, 0, 0));
+
+            // ขยายให้เท่าช่อง Grid
+            float t = GridManager.Instance.tileSize;
+            marker.transform.localScale = new Vector3(t, t, t);
+
+            spawnMarkers.Add(marker);
+        }
+    }
+
+
+
+    public void ClearSpawnMarkers()
+    {
+        foreach (var m in spawnMarkers)
+            Destroy(m);
+
+        spawnMarkers.Clear();
+    }
+
+
+
 }

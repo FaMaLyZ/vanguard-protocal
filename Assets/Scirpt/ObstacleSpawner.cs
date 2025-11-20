@@ -1,48 +1,45 @@
-using UnityEngine;
+๏ปฟusing UnityEngine;
+using System.Collections.Generic;
 
 public class ObstacleSpawner : MonoBehaviour
 {
     public GameObject obstaclePrefab;
-    public int obstacleCount = 10; // จำนวน Obstacle ที่อยากวางตอนเริ่มเกม
     public float obstacleHeight = 1.5f;
+
+    // ๐’ก Dev เธชเธฒเธกเธฒเธฃเธ–เธเธณเธซเธเธ”เธ•เธณเนเธซเธเนเธ Obstacle เน€เธญเธเนเธ Inspector
+    public List<Vector2Int> fixedObstaclePositions = new List<Vector2Int>();
 
     void Start()
     {
-        SpawnObstacles();
+        SpawnFixedObstacles();
     }
 
-    void SpawnObstacles()
+    void SpawnFixedObstacles()
     {
         var grid = GridManager.Instance;
 
-        int tries = 0;
-        int spawned = 0;
-        int MAX_TRIES = obstacleCount * 10; // กันลูปค้าง
-
-        while (spawned < obstacleCount && tries < MAX_TRIES)
+        foreach (var pos in fixedObstaclePositions)
         {
-            tries++;
-
-            int x = Random.Range(0, grid.width);
-            int y = Random.Range(0, grid.height);
-            Vector2Int gridPos = new Vector2Int(x, y);
-
-            // ห้ามวางบนช่องที่มี unit หรือ obstacle อยู่แล้ว
-            if (!grid.IsTileFree(gridPos))
+            if (!grid.InBounds(pos))
+            {
+                Debug.LogWarning($"Obstacle position {pos} is out of grid!");
                 continue;
+            }
 
-            // ตำแหน่ง world (snap กลาง tile)
-            Vector3 worldPos = grid.GridToWorld(gridPos);
+            if (!grid.IsTileFree(pos))
+            {
+                Debug.LogWarning($"Tile {pos} is not free. Skipping obstacle.");
+                continue;
+            }
+
+            Vector3 worldPos = grid.GridToWorld(pos);
             worldPos.y = obstacleHeight;
 
             GameObject obj = Instantiate(obstaclePrefab, worldPos, Quaternion.identity);
 
-            // บันทึก obstacle ลง grid
-            grid.OccupyWithObstacle(gridPos, obj);
-
-            spawned++;
+            grid.OccupyWithObstacle(pos, obj);
         }
 
-        Debug.Log($"Spawned {spawned} obstacles.");
+        Debug.Log($"Spawned {fixedObstaclePositions.Count} fixed obstacles.");
     }
 }

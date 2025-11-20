@@ -7,6 +7,8 @@ public class EnemyUnit : Unit
     public float attackRange = 1f;
     public CharacterMovement characterMovement;
 
+    private Vector2Int plannedAttackCell;
+
     private void Awake()
     {
         characterMovement = GetComponent<CharacterMovement>();
@@ -22,39 +24,53 @@ public class EnemyUnit : Unit
         GameManager.Instance?.RemoveEnemyUnit(this);
     }
 
-    public void TakeTurn()
+    public void DoMovePhase()
     {
-        if (hasTakenAction) return;
-
-        // ✅ ตรวจ player ที่อยู่ติดกันก่อน (ระยะประชิด)
-        PlayerUnit adj = GetAdjacentPlayer();
-        if (adj != null)
-        {
-            Attack(adj);
-            Debug.Log($"{name} attacks {adj.name}!  HP Remaining = {adj.currentHealth}");
-            hasTakenAction = true;
-            return;
-        }
-
-        // ✅ ถ้าไม่มีเป้าหมายประชิด → เดินเข้าใกล้
         PlayerUnit target = GameManager.Instance.GetClosestPlayerUnit(transform.position);
-        if (target == null)
-        {
-            hasTakenAction = true;
-            return;
-        }
+
+        if (target == null) return;
 
         MoveTowards(target);
-
-        hasTakenAction = true;
     }
-
-
-    private void Attack(PlayerUnit target)
+    public void ShowAttackPreview()
     {
-        target.TakeDamage(attackDamage);
-        Debug.Log($"{name} attacks {target.name}!");
+        var grid = GridManager.Instance;
+        Vector2Int myGrid = grid.WorldToGrid(transform.position);
+
+        // 4 ทิศโจมตี
+        Vector2Int[] dirs =
+        {
+        new Vector2Int( 1, 0),
+        new Vector2Int(-1, 0),
+        new Vector2Int( 0, 1),
+        new Vector2Int( 0,-1)
+    };
+
+        // เลือกทิศที่ใกล้ Player ที่สุด
+        plannedAttackCell = myGrid + dirs[Random.Range(0, 4)];
+
+        // Highlight preview
+        grid.HighlightTile(plannedAttackCell, Color.red);
     }
+    public void ExecutePlannedAttack()
+    {
+        var grid = GridManager.Instance;
+
+        if (grid.occupiedTiles.TryGetValue(plannedAttackCell, out Unit unit))
+        {
+            if (unit is PlayerUnit pu)
+            {
+                pu.TakeDamage(attackDamage);
+                Debug.Log($"{name} hits {pu.name}!");
+            }
+        }
+    }
+
+    public void ClearAttackPreview()
+    {
+        GridManager.Instance.ClearHighlights();
+    }
+
 
     private void MoveTowards(PlayerUnit target)
     {

@@ -53,6 +53,7 @@ public class GridManager : MonoBehaviour
                 );
 
                 GameObject tile = Instantiate(prefab, pos, Quaternion.identity, transform);
+                tile.name = $"Tile ({x},{z})";
                 tile.transform.localScale = Vector3.one * tileSize;
 
                 gridPositions.Add(new Vector2Int(x, z), pos);
