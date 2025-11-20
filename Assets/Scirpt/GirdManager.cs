@@ -15,6 +15,7 @@ public class GridManager : MonoBehaviour
     public GameObject greenHighlightPrefab;
     public GameObject redHighlightPrefab;
 
+
     private List<GameObject> activeHighlights = new List<GameObject>();
 
 
@@ -98,7 +99,6 @@ public class GridManager : MonoBehaviour
     {
         return g.x >= 0 && g.x < width && g.y >= 0 && g.y < height;
     }
-
     // เพื่อนบ้าน 4 ทิศ
     public List<Vector2Int> GetNeighbors4(Vector2Int g)
     {
@@ -113,7 +113,6 @@ public class GridManager : MonoBehaviour
         n.RemoveAll(p => !InBounds(p));
         return n;
     }
-
     // หา "ช่องว่าง" ที่ใกล้ที่สุดรอบๆ center (ขยายรัศมีทีละชั้น)
     public bool TryFindNearestFreeTile(Vector2Int center, Vector2Int preferFrom, int maxRadius, out Vector2Int result)
     {
@@ -177,7 +176,9 @@ public class GridManager : MonoBehaviour
         GameObject prefab = color == Color.red ? redHighlightPrefab : greenHighlightPrefab;
 
         Vector3 world = GridToWorld(gridPos);
-        world.y += 0.05f; // ยกขึ้นนิดหน่อย
+
+        // 👈 ยกขึ้นบนผิว tile จริง ๆ
+        world.y = (tileSize * 0.5f) + 0.02f;
 
         GameObject h = Instantiate(prefab, world, Quaternion.identity);
         activeHighlights.Add(h);
@@ -192,7 +193,4 @@ public class GridManager : MonoBehaviour
 
         activeHighlights.Clear();
     }
-
-
-
 }

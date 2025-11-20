@@ -140,6 +140,7 @@ public class PlayerInputController : MonoBehaviour
                 Vector2Int pos = new Vector2Int(start.x + dx, start.y + dy);
 
                 if (!GridManager.Instance.InBounds(pos)) continue;
+                if (!GridManager.Instance.gridPositions.ContainsKey(pos))continue;
                 if (!GridManager.Instance.IsTileFree(pos)) continue;
 
                 GridManager.Instance.HighlightTile(pos, Color.green);
@@ -160,7 +161,7 @@ public class PlayerInputController : MonoBehaviour
                 Vector2Int pos = new Vector2Int(start.x + dx, start.y + dy);
 
                 if (!GridManager.Instance.InBounds(pos)) continue;
-
+                if (!GridManager.Instance.gridPositions.ContainsKey(pos))continue;
                 GridManager.Instance.HighlightTile(pos, Color.red);
             }
         }

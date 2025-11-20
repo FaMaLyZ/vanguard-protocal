@@ -863,7 +863,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 0}
-  m_Type: 0
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1253,7 +1253,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 26, y: -459}
+  m_AnchoredPosition: {x: 130, y: -459}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1239003314
@@ -1593,8 +1593,8 @@ MonoBehaviour:
   tileSize: 3
   whiteTilePrefab: {fileID: 6285504319771794136, guid: 012c0b57c65ebb941b616309dc007ac9, type: 3}
   blackTilePrefab: {fileID: 5356305045300675571, guid: b89be8289c43ca74a926c4a213bf712d, type: 3}
-  greenHighlightPrefab: {fileID: 1348109216909913035, guid: d92069cd4d2a40042bb8cca3ac227747, type: 3}
-  redHighlightPrefab: {fileID: 1348109216909913035, guid: 76d054287d8d7524b973814bbc691b56, type: 3}
+  greenHighlightPrefab: {fileID: 6877830710851016682, guid: 05e03b0059fa2c14f93016e44bd8d33a, type: 3}
+  redHighlightPrefab: {fileID: 2335939173926236148, guid: 3a77595e6a9f528409d9bf5356a81921, type: 3}
 --- !u!4 &1527995062
 Transform:
   m_ObjectHideFlags: 0
