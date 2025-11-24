@@ -37,21 +37,26 @@ public class EnemyUnit : Unit
         var grid = GridManager.Instance;
         Vector2Int myGrid = grid.WorldToGrid(transform.position);
 
-        // 4 ทิศโจมตี
-        Vector2Int[] dirs =
-        {
-        new Vector2Int( 1, 0),
-        new Vector2Int(-1, 0),
-        new Vector2Int( 0, 1),
-        new Vector2Int( 0,-1)
-    };
+        PlayerUnit target = GameManager.Instance.GetClosestPlayerUnit(transform.position);
+        if (target == null) return;
 
-        // เลือกทิศที่ใกล้ Player ที่สุด
-        plannedAttackCell = myGrid + dirs[Random.Range(0, 4)];
+        Vector2Int targetGrid = grid.WorldToGrid(target.transform.position);
 
-        // Highlight preview
-        grid.HighlightTile(plannedAttackCell, Color.red);
+        Vector2Int dir;
+
+        int dx = targetGrid.x - myGrid.x;
+        int dy = targetGrid.y - myGrid.y;
+
+        if (Mathf.Abs(dx) > Mathf.Abs(dy))
+            dir = (dx > 0) ? Vector2Int.right : Vector2Int.left;
+        else
+            dir = (dy > 0) ? Vector2Int.up : Vector2Int.down;
+
+        plannedAttackCell = myGrid + dir;
+
+        grid.HighlightEnemyPreview(plannedAttackCell);
     }
+
     public void ExecutePlannedAttack()
     {
         var grid = GridManager.Instance;

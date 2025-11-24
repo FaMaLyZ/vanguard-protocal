@@ -26,6 +26,12 @@ public class GameManager : MonoBehaviour
     private List<PlayerUnit> _playerUnits = new List<PlayerUnit>();
     private List<EnemyUnit> _enemyUnits = new List<EnemyUnit>();
 
+    public GameObject[] playerUnitPrefabs;  // size = 3
+    private int selectedUnitIndex = 0;
+
+
+
+
     private int currentWave = 1;
 
 
@@ -49,6 +55,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("--- Placement Phase ---");
         endTurnButton.interactable = true;
     }
+
 
     public void EndPlayerTurn()
     {
@@ -117,7 +124,7 @@ public class GameManager : MonoBehaviour
         foreach (var enemy in _enemyUnits.ToList())
         {
             if (enemy == null) continue;
-            enemy.ClearAttackPreview();
+            GridManager.Instance.ClearEnemyPreview();
         }
 
         StartEnemyTurn();  // เริ่ม Move Phase ใหม่
@@ -132,6 +139,7 @@ public class GameManager : MonoBehaviour
             if (enemy == null) continue;
 
             enemy.DoMovePhase();          // เดิน
+            yield return enemy.characterMovement.WaitUntilMoveFinish();
             enemy.ShowAttackPreview();    // แสดงว่าจะโจมตีช่องไหน
 
             yield return enemy.characterMovement.WaitUntilMoveFinish();
@@ -203,4 +211,5 @@ public class GameManager : MonoBehaviour
             .OrderBy(p => Vector3.Distance(pos, p.transform.position))
             .FirstOrDefault();
     }
+
 }

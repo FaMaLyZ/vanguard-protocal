@@ -510,7 +510,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f13407535e451b549b5cfe97847d79dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Characterprefab: {fileID: 1764350295670950540, guid: 1ca9faf4b85681a48b26f71e5b32711c, type: 3}
+  playerPrefabs:
+  - {fileID: 4779481650012529366, guid: 11c970d3befbded4c945e0e37f179aed, type: 3}
+  - {fileID: 1764350295670950540, guid: 1ca9faf4b85681a48b26f71e5b32711c, type: 3}
+  - {fileID: 943327841138010421, guid: 9f9176c2509e6a44ba607480e0bff86d, type: 3}
   characterToPlace: 3
   unitHeight: 2.3
 --- !u!4 &357424301
@@ -1762,6 +1765,7 @@ MonoBehaviour:
   CurrentState: 0
   enemySpawner: {fileID: 1462580601}
   endTurnButton: {fileID: 1158269699}
+  playerUnitPrefabs: []
 --- !u!4 &1342081294
 Transform:
   m_ObjectHideFlags: 0
@@ -1807,8 +1811,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 4584261518195316261, guid: 38b4e36473fd59c4785a64c4baf346fa, type: 3}
-  enemyHeight: 2.5
-  spawnMarkerPrefab: {fileID: 9016171104758154580, guid: 21f0551804efc524eb8bb5fb3e466236, type: 3}
+  enemyHeight: 2
+  spawnMarkerPrefab: {fileID: 8610257962211102919, guid: 9da5aadf768fb5e49b012aa991c695e3, type: 3}
   fixedSpawnPoints:
   - {x: 2, y: 5}
   - {x: 4, y: 7}
@@ -1864,6 +1868,7 @@ MonoBehaviour:
   blackTilePrefab: {fileID: 5356305045300675571, guid: b89be8289c43ca74a926c4a213bf712d, type: 3}
   greenHighlightPrefab: {fileID: 6877830710851016682, guid: 05e03b0059fa2c14f93016e44bd8d33a, type: 3}
   redHighlightPrefab: {fileID: 2335939173926236148, guid: 3a77595e6a9f528409d9bf5356a81921, type: 3}
+  enemyPreviewPrefab: {fileID: 9016171104758154580, guid: 21f0551804efc524eb8bb5fb3e466236, type: 3}
 --- !u!4 &1527995062
 Transform:
   m_ObjectHideFlags: 0
@@ -1916,7 +1921,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -965, y: 359}
+  m_AnchoredPosition: {x: -960.5, y: 359}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1569752078

@@ -18,6 +18,10 @@ public class GridManager : MonoBehaviour
 
     private List<GameObject> activeHighlights = new List<GameObject>();
 
+    private List<GameObject> enemyPreviewTiles = new List<GameObject>();
+    public GameObject enemyPreviewPrefab;// ให้เลือก prefab สีแดงสำหรับ enemy
+
+
 
     // เก็บตำแหน่ง world ของแต่ละ tile
     public Dictionary<Vector2Int, Vector3> gridPositions = new Dictionary<Vector2Int, Vector3>();
@@ -194,4 +198,23 @@ public class GridManager : MonoBehaviour
 
         activeHighlights.Clear();
     }
+    public void HighlightEnemyPreview(Vector2Int gridPos)
+    {
+        Vector3 world = GridToWorld(gridPos);
+        world.y = (tileSize * 0.5f) + 0.02f;
+
+        GameObject h = Instantiate(enemyPreviewPrefab, world, Quaternion.Euler(90, 0, 0));
+        h.transform.localScale = Vector3.one * tileSize;
+
+        enemyPreviewTiles.Add(h);
+    }
+    public void ClearEnemyPreview()
+    {
+        foreach (var h in enemyPreviewTiles)
+            if (h != null) Destroy(h);
+
+        enemyPreviewTiles.Clear();
+    }
+
+
 }

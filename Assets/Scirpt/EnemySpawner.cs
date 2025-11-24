@@ -46,13 +46,13 @@ public class EnemySpawner : MonoBehaviour
             Vector3 world = GridManager.Instance.GridToWorld(pos);
 
             // วางบนผิว tile (Cube สูง tileSize → ผิวบน = tileSize * 0.5)
-            world.y = GridManager.Instance.tileSize * 0.51f;
+            world.y = GridManager.Instance.tileSize * 0.8f;
 
-            GameObject marker = Instantiate(spawnMarkerPrefab, world, Quaternion.Euler(90, 0, 0));
+            GameObject marker = Instantiate(spawnMarkerPrefab, world, Quaternion.Euler(0, 0, 0));
 
             // ขยายให้เท่าช่อง Grid
             float t = GridManager.Instance.tileSize;
-            marker.transform.localScale = new Vector3(t, t, t);
+            marker.transform.localScale = new Vector3(100, 100, 100);
 
             spawnMarkers.Add(marker);
         }

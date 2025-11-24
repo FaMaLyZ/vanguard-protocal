@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 065f36c38e770e24d96b8973229db521, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.7
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 065f36c38e770e24d96b8973229db521, type: 3}
       propertyPath: m_LocalPosition.y
@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 065f36c38e770e24d96b8973229db521, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -13.53
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 065f36c38e770e24d96b8973229db521, type: 3}
       propertyPath: m_LocalRotation.w
@@ -63,5 +63,50 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 065f36c38e770e24d96b8973229db521, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7692393523756246701}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 065f36c38e770e24d96b8973229db521, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6643396446629016241}
   m_SourcePrefab: {fileID: 100100000, guid: 065f36c38e770e24d96b8973229db521, type: 3}
+--- !u!1 &943327841138010421 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 065f36c38e770e24d96b8973229db521, type: 3}
+  m_PrefabInstance: {fileID: 132353151864493156}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7692393523756246701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943327841138010421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98e746cf78617d04da03893a6b592311, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 0
+  attackDamage: 15
+  moveSpeed: 5
+  hasTakenAction: 0
+  projectilePrefab: {fileID: 0}
+  characterMovement: {fileID: 0}
+  movementRange: 3
+  attackRange: 3
+--- !u!114 &-6643396446629016241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943327841138010421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 695c14b56990bcd4e86cc35aa1b4f57f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
