@@ -511,8 +511,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerPrefabs:
-  - {fileID: 4779481650012529366, guid: 11c970d3befbded4c945e0e37f179aed, type: 3}
   - {fileID: 1764350295670950540, guid: 1ca9faf4b85681a48b26f71e5b32711c, type: 3}
+  - {fileID: 8289056629103925233, guid: 9decebd478ea6734285f37033da6428f, type: 3}
   - {fileID: 943327841138010421, guid: 9f9176c2509e6a44ba607480e0bff86d, type: 3}
   characterToPlace: 3
   unitHeight: 2.3

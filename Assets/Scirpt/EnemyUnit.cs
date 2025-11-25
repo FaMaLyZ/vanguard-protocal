@@ -191,6 +191,24 @@ public class EnemyUnit : Unit
 
         return null;
     }
+    public void ForceMoveTo(Vector2Int newGridPos)
+    {
+        Vector3 newWorldPos = GridManager.Instance.GridToWorld(newGridPos);
+
+        // update world
+        transform.position = newWorldPos;
+
+        // update gridManager tile states
+        GridManager.Instance.FreeTile(gridPos);   // old
+        gridPos = newGridPos;                     // update protected field
+        GridManager.Instance.OccupyTile(newGridPos, this);
+    }
+    public Vector2Int GetGridPos()
+    {
+        return gridPos;
+    }
+
+
 
 
 }

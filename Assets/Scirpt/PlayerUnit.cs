@@ -22,62 +22,40 @@ public class PlayerUnit : Unit
         GameManager.Instance?.RemovePlayerUnit(this);
     }
 
-    public void Attack(EnemyUnit target)
+    public virtual void Attack(EnemyUnit target)
     {
         if (hasTakenAction || GameManager.Instance.CurrentState != GameState.PlayerTurn)
-        {
-            Debug.Log("Cannot attack: Not your turn or you've already acted.");
             return;
-        }
 
         if (projectilePrefab == null)
         {
-            Debug.LogError("Projectile Prefab is not assigned on " + name);
+            Debug.LogError("Projectile Prefab missing on " + name);
             return;
         }
 
-        // origin slightly above unit to avoid ground hits
+        // ÂÔ§»¡µÔáºº base
+        FireProjectile(target);
+        hasTakenAction = true;
+    }
+    protected void FireProjectile(EnemyUnit target)
+    {
         Vector3 origin = transform.position + Vector3.up * 1.0f;
         Vector3 targetPos = target.transform.position + Vector3.up * 1.0f;
         Vector3 dir = (targetPos - origin).normalized;
         float dist = Vector3.Distance(origin, targetPos);
 
-        // Raycast and check for obstacle
         if (Physics.Raycast(origin, dir, out RaycastHit hitInfo, dist))
         {
-            // If we hit something before reaching target
             if (hitInfo.collider != null)
             {
-                // If the hit is the target's collider -> proceed
-                if (hitInfo.collider.GetComponent<EnemyUnit>() == target)
-                {
-                    // ok to shoot
-                }
-                else if (hitInfo.collider.GetComponent<Obstacle>() != null)
-                {
-                    Debug.Log($"{name}'s shot blocked by obstacle at {GridManager.Instance.WorldToGrid(hitInfo.collider.transform.position)}");
-                    // optionally: play blocked sound/feedback
-                    return; // cancel attack
-                }
-                else
-                {
-                    // hit something else (e.g. another unit) - treat as blocked
-                    Debug.Log($"{name}'s shot blocked by {hitInfo.collider.name}");
+                if (hitInfo.collider.GetComponent<EnemyUnit>() != target)
                     return;
-                }
             }
         }
 
-        // Spawn projectile
-        Debug.Log($"{gameObject.name} fires at {target.name}!");
-        GameObject projectileGO = Instantiate(projectilePrefab, transform.position + Vector3.up, Quaternion.identity);
+        GameObject projectileGO = Instantiate(projectilePrefab, origin, Quaternion.identity);
         Projectile projectile = projectileGO.GetComponent<Projectile>();
-        if (projectile != null)
-        {
-            projectile.Initialize(target, attackDamage);
-        }
-
-        hasTakenAction = true;
+        projectile.Initialize(target, attackDamage);
     }
 
 
@@ -96,4 +74,12 @@ public class PlayerUnit : Unit
         characterMovement.MoveToGrid(grid);
         hasTakenAction = true;
     }
+    protected Vector2Int GridPos(Vector3 world)
+    {
+        return new Vector2Int(
+            Mathf.RoundToInt(world.x / GridManager.Instance.tileSize),
+            Mathf.RoundToInt(world.z / GridManager.Instance.tileSize)
+        );
+    }
+
 }

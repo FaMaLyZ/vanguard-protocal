@@ -37,4 +37,5 @@ public abstract class Unit : MonoBehaviour
         Debug.Log($"{gameObject.name} has died.");
         Destroy(gameObject);
     }
+
 }
