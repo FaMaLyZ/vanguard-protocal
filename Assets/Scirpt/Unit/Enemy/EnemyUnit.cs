@@ -46,7 +46,7 @@ public class EnemyUnit : Unit
 
         MoveTowards(target);
     }
-    public void ShowAttackPreview()
+    virtual public void ShowAttackPreview()
     {
         var grid = GridManager.Instance;
         Vector2Int myGrid = grid.WorldToGrid(transform.position);
@@ -71,7 +71,7 @@ public class EnemyUnit : Unit
         grid.HighlightEnemyPreview(plannedAttackCell);
     }
 
-    public void ExecutePlannedAttack()
+    virtual public void ExecutePlannedAttack()
     {
         var grid = GridManager.Instance;
 

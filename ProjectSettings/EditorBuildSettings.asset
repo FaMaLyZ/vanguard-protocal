@@ -11,6 +11,21 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Wave_2.unity
+    guid: 9497fc96dd49fb94bbd30d8ac35f6eb3
+  - enabled: 1
+    path: Assets/Scenes/Wave_3.unity
+    guid: abc524681528ee54bb63869558b69df6
+  - enabled: 0
+    path: Assets/Scenes/Wave2.unity
+    guid: 9f16bd98d38ea694999707b0dd3c6d92
+  - enabled: 0
+    path: Assets/Scenes/Wave3.unity
+    guid: 9c14270ff7c1e8f4582f65b8a4ea75c5
+  - enabled: 1
+    path: Assets/Scenes/GameOver.unity
+    guid: d734810675be92448ab54ba9d598f08a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

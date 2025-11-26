@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public enum GameState
@@ -11,7 +12,8 @@ public enum GameState
     PlayerTurn,
     EnemyTurn,
     WaveStart,
-    GameOver
+    GameOver,
+    None
 }
 
 public class GameManager : MonoBehaviour
@@ -26,23 +28,24 @@ public class GameManager : MonoBehaviour
     private List<PlayerUnit> _playerUnits = new List<PlayerUnit>();
     private List<EnemyUnit> _enemyUnits = new List<EnemyUnit>();
 
-    public GameObject[] playerUnitPrefabs;  // size = 3
-    private int selectedUnitIndex = 0;
 
-
-
-
-    private int currentWave = 1;
+    public string[] waveScenes; // ใส่ Wave2, Wave3 ใน Inspector
+    public int currentWave ;
 
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+
+        Instance = this;
+        
     }
 
     void Start()
     {
+        currentWave = PlayerPrefs.GetInt("CurrentWave", 1); // 🔧 NEW default = Wave1
+
+        Debug.Log("Loaded currentWave = " + currentWave);
+
         _playerUnits = FindObjectsOfType<PlayerUnit>().ToList();
         _enemyUnits = FindObjectsOfType<EnemyUnit>().ToList();
 
@@ -113,7 +116,7 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
 
         yield return StartCoroutine(StartEnemyTurn());
-        currentWave++;
+        
     }
     private IEnumerator EnemyMovePhase()
     {
@@ -181,22 +184,33 @@ public class GameManager : MonoBehaviour
         // ✅ ถ้าใน Wave ไม่มีศัตรูแล้ว
         if (_enemyUnits.Count == 0)
         {
-            Debug.Log($"Wave {currentWave - 1} Finished!");
+            Debug.Log($"Wave {currentWave} Finished!");
 
             // ถ้ามี UI ก็เรียก:
             // UIManager.Instance.ShowWaveFinished(currentWave - 1);
+            WaveCleared();
+            return;
         }
-
         CheckForGameOver();
     }
 
 
     private void CheckForGameOver()
     {
+        // ❌ ยังอยู่ใน Phase วางยูนิต → ห้าม GameOver
+        if (CurrentState == GameState.Placement)
+        { return; }
+
+
+        // ❌ ยังไม่ได้เริ่มเกมจริง → ห้าม GameOver
+        if (_playerUnits == null || _playerUnits.Count == 0)
+        { return; }
+
         if (_playerUnits.Count == 0)
         {
             CurrentState = GameState.GameOver;
             Debug.Log("Game Over: You Lose!");
+            SceneManager.LoadScene("GameOver");
         }
     }
 
@@ -210,6 +224,23 @@ public class GameManager : MonoBehaviour
     {
         return _enemyUnits;
     }
+    public void WaveCleared()
+    {
+        Debug.Log("Wave cleared!");
 
+        currentWave++;
 
+        CurrentState = GameState.None;
+
+        PlayerPrefs.SetInt("CurrentWave", currentWave); // 🔧 NEW — เก็บค่าก่อนเปลี่ยน Scene
+
+        if (currentWave - 1 < waveScenes.Length)
+        {
+            SceneManager.LoadScene(waveScenes[currentWave - 1]);  // โหลดฉากถัดไป
+        }
+        else
+        {
+            SceneManager.LoadScene("GameOver");
+        }
+    }
 }

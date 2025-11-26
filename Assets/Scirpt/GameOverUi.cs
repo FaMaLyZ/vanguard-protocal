@@ -1,0 +1,16 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class GameOverUI : MonoBehaviour
+{
+    public void RestartGame()
+    {
+        // ‚À≈¥©“° Gameplay Õ’°§√—Èß
+        SceneManager.LoadScene("SampleScene");
+    }
+
+    public void GoToMainMenu()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+}

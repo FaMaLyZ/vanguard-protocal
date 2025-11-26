@@ -12,11 +12,11 @@ GameObject:
   - component: {fileID: 5867557627505775589}
   - component: {fileID: 9168309623121657698}
   - component: {fileID: 8872115693577347085}
-  - component: {fileID: 2121430038825464962}
   - component: {fileID: 1432925447896618147}
   - component: {fileID: 8243459847037996862}
+  - component: {fileID: 7861914229124794517}
   m_Layer: 7
-  m_Name: EnemyPrefab
+  m_Name: EliteEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e29c3970bd34ed54aad1a4a86a30eac9, type: 2}
+  - {fileID: 2100000, guid: 0d77e92dd854b4a42bb5b29b968a9842, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -113,25 +113,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &2121430038825464962
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4584261518195316261}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36b1fa59b8217864f90b50a268b77ea1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 1
-  currentHealth: 1
-  attackDamage: 1
-  moveSpeed: 5
-  hasTakenAction: 0
-  attackRange: 1
-  characterMovement: {fileID: 0}
 --- !u!114 &1432925447896618147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,3 +153,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &7861914229124794517
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4584261518195316261}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a315a4c89c98a548bb087a3e077095c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 3
+  currentHealth: 3
+  attackDamage: 1
+  moveSpeed: 5
+  hasTakenAction: 0
+  attackRange: 1
+  characterMovement: {fileID: 0}
