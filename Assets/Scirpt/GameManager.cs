@@ -67,11 +67,32 @@ public class GameManager : MonoBehaviour
 
         if (CurrentState == GameState.PlayerTurn)
         {
-            endTurnButton.interactable = false;
-            StartCoroutine(EnemyAttackPhase());   // ← ใช้ Attack Phase ก่อน
+            
+            StartCoroutine(StartEnemyTurn()); 
         }
     }
 
+    private IEnumerator StartEnemyTurn()
+    {
+        CurrentState = GameState.EnemyTurn;
+        Debug.Log("--- Enemy's Turn ---");
+
+        // 1) โจมตีก่อน (ตาม plannedAttackCell)
+        yield return EnemyAttackPhase();
+
+        // 2) เดิน
+        yield return EnemyMovePhase();
+
+        // 3) เตรียมโจมตีรอบถัดไป
+        foreach (var enemy in _enemyUnits.ToList())
+        {
+            if (enemy == null) continue;
+            enemy.ShowAttackPreview();
+        }
+
+        // 4) ส่ง turn กลับให้ player
+        StartPlayerTurn();
+    }
 
     private IEnumerator StartWave()
     {
@@ -91,22 +112,23 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.3f);
 
-        StartEnemyTurn();
+        yield return StartCoroutine(StartEnemyTurn());
         currentWave++;
     }
-
-    private void StartEnemyTurn()
+    private IEnumerator EnemyMovePhase()
     {
-        CurrentState = GameState.EnemyTurn;
-        Debug.Log("--- Enemy's Turn ---");
+        Debug.Log("=== Enemy MOVE Phase ===");
 
-        // ✅ Reset enemy actions
         foreach (var enemy in _enemyUnits.ToList())
-            if (enemy != null)
-                enemy.ResetTurn();
+        {
+            if (enemy == null) continue;
 
-        StartCoroutine(EnemyTurnRoutine());
+            enemy.DoMovePhase();
+            yield return enemy.characterMovement.WaitUntilMoveFinish();
+            yield return new WaitForSeconds(0.2f);
+        }
     }
+
 
     private IEnumerator EnemyAttackPhase()
     {
@@ -115,40 +137,13 @@ public class GameManager : MonoBehaviour
         foreach (var enemy in _enemyUnits.ToList())
         {
             if (enemy == null) continue;
-
-            enemy.ExecutePlannedAttack();   // ← โจมตีจาก preview
+            enemy.ExecutePlannedAttack();
             yield return new WaitForSeconds(0.2f);
         }
 
-        // ลบ preview ทั้งหมด
-        foreach (var enemy in _enemyUnits.ToList())
-        {
-            if (enemy == null) continue;
-            GridManager.Instance.ClearEnemyPreview();
-        }
-
-        StartEnemyTurn();  // เริ่ม Move Phase ใหม่
+        // ล้าง preview เก่า
+        GridManager.Instance.ClearEnemyPreview();
     }
-
-    private IEnumerator EnemyTurnRoutine()
-    {
-        Debug.Log("=== Enemy MOVE Phase ===");
-
-        foreach (var enemy in _enemyUnits.ToList())
-        {
-            if (enemy == null) continue;
-
-            enemy.DoMovePhase();          // เดิน
-            yield return enemy.characterMovement.WaitUntilMoveFinish();
-            enemy.ShowAttackPreview();    // แสดงว่าจะโจมตีช่องไหน
-
-            yield return enemy.characterMovement.WaitUntilMoveFinish();
-            yield return new WaitForSeconds(0.2f);
-        }
-
-        StartPlayerTurn();
-    }
-
 
 
     public void StartPlayerTurn()
@@ -211,5 +206,10 @@ public class GameManager : MonoBehaviour
             .OrderBy(p => Vector3.Distance(pos, p.transform.position))
             .FirstOrDefault();
     }
+    public List<EnemyUnit> GetAllEnemies()
+    {
+        return _enemyUnits;
+    }
+
 
 }

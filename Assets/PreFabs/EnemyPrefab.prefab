@@ -125,12 +125,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36b1fa59b8217864f90b50a268b77ea1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
-  currentHealth: 50
-  attackDamage: 15
+  maxHealth: 1
+  currentHealth: 1
+  attackDamage: 1
   moveSpeed: 5
   hasTakenAction: 0
   attackRange: 1
+  characterMovement: {fileID: 0}
 --- !u!114 &1432925447896618147
 MonoBehaviour:
   m_ObjectHideFlags: 0

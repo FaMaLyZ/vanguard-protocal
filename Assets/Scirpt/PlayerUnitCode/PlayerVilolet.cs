@@ -26,7 +26,9 @@ public class VioletUnit : PlayerUnit
 
     void PullEnemy(EnemyUnit enemy, Vector2Int dir)
     {
-        Vector2Int newPos = enemy.GetGridPos() + dir;
+        Vector2Int enemyCurrentPos = GridPos(enemy.transform.position);
+        Vector2Int newPos = enemyCurrentPos + dir;
+
 
         // ขยับศัตรูแบบปลอดภัย
         if (GridManager.Instance.IsTileFree(newPos))

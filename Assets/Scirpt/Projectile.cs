@@ -1,4 +1,3 @@
-// Projectile.cs
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
@@ -7,9 +6,8 @@ public class Projectile : MonoBehaviour
     private int _damage;
     private float _speed = 15f;
 
-    /// <summary>
-    /// Call this immediately after instantiating the projectile.
-    /// </summary>
+    public System.Action<EnemyUnit> OnHitEnemy;   // สำหรับ Desert / Violet / Crimson
+
     public void Initialize(Unit target, int damage)
     {
         _target = target;
@@ -18,12 +16,20 @@ public class Projectile : MonoBehaviour
 
     void Update()
     {
-        if (_target == null) { Destroy(gameObject); return; }
+        if (_target == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        Vector3 dir = (_target.transform.position - transform.position).normalized;
+        Vector3 dir = (_target.transform.position - transform.position);
         float step = _speed * Time.deltaTime;
+
+        // --------------------------
+        // ตรวจ obstacle (ไม่ทำ damage)
+        // --------------------------
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, dir, out hit, step + 0.01f))
+        if (Physics.Raycast(transform.position, dir.normalized, out hit, step + 0.01f))
         {
             if (hit.collider.GetComponent<Obstacle>() != null)
             {
@@ -31,21 +37,25 @@ public class Projectile : MonoBehaviour
                 Destroy(gameObject);
                 return;
             }
-            if (hit.collider.GetComponent<Unit>() != null && hit.collider.GetComponent<Unit>() == _target)
-            {
-                _target.TakeDamage(_damage);
-                Destroy(gameObject);
-                return;
-            }
         }
 
-        transform.position += dir * step;
+        // --------------------------
+        // เคลื่อน projectile
+        // --------------------------
+        transform.position += dir.normalized * step;
 
-        if (Vector3.Distance(transform.position, _target.transform.position) < 0.5f)
+        // --------------------------
+        // ชนเป้าหมายจริง (impact frame)
+        // --------------------------
+        if (Vector3.Distance(transform.position, _target.transform.position) <= 0.3f)
         {
+            // เรียก effect ก่อน damage
+            OnHitEnemy?.Invoke(_target as EnemyUnit);
+
+            // damage หลังชน
             _target.TakeDamage(_damage);
+
             Destroy(gameObject);
         }
     }
-
 }

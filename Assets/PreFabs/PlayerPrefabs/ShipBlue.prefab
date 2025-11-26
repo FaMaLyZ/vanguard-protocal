@@ -150,9 +150,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fae0e41a8d58f894eb1161831d898896, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 3
   currentHealth: 0
-  attackDamage: 15
+  attackDamage: 1
   moveSpeed: 5
   hasTakenAction: 0
   projectilePrefab: {fileID: 6244906853839892898, guid: 75a8452b91651094dbb463c15c9bc16d, type: 3}

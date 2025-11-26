@@ -21,8 +21,22 @@ public class EnemyUnit : Unit
 
     private void OnDestroy()
     {
+        if (GridManager.Instance != null)
+        {
+            // ล้าง preview ทั้งหมด
+            GridManager.Instance.ClearEnemyPreview();
+        }
+
+        // เอาออกจากระบบ
         GameManager.Instance?.RemoveEnemyUnit(this);
+
+        // ให้ศัตรูที่ยังไม่ตายวาด preview ใหม่
+        foreach (var enemy in GameManager.Instance.GetAllEnemies())
+        {
+            enemy.ShowAttackPreview();
+        }
     }
+
 
     public void DoMovePhase()
     {
@@ -207,8 +221,5 @@ public class EnemyUnit : Unit
     {
         return gridPos;
     }
-
-
-
 
 }
