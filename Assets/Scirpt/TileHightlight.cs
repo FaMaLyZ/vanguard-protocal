@@ -6,11 +6,10 @@ public class TileHighlight : MonoBehaviour
 
     void Start()
     {
-        // หมุนให้ Quad นอนราบบนพื้น (สำคัญมาก!!!)
         transform.rotation = Quaternion.Euler(90, 0, 0);
 
         Vector3 pos = transform.position;
-        pos.y += 0.05f;     // ? แก้ตรงนี้
+        pos.y += 0.05f;     
         transform.position = pos;
 
         float s = GridManager.Instance.tileSize;

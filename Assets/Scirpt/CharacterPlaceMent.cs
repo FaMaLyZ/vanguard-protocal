@@ -47,7 +47,9 @@ public class CharacterPlaceMent : MonoBehaviour
             Vector3 spawnPos = GridManager.Instance.GridToWorld(grid);
             spawnPos.y = unitHeight;
 
-            GameObject characterInstance = Instantiate(selectedPrefab, spawnPos, Quaternion.identity);
+            Quaternion rot = Quaternion.Euler(0, 180, 0);
+
+            GameObject characterInstance = Instantiate(selectedPrefab, spawnPos, rot);
             PlayerUnit newUnit = characterInstance.GetComponent<PlayerUnit>();
 
             if (newUnit != null)

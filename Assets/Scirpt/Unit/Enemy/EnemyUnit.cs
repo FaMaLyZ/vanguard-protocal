@@ -8,10 +8,12 @@ public class EnemyUnit : Unit
     public CharacterMovement characterMovement;
 
     private Vector2Int plannedAttackCell;
+    public Animator anim;
 
     private void Awake()
     {
         characterMovement = GetComponent<CharacterMovement>();
+        anim = GetComponent<Animator>();
     }
 
     private void Start()
@@ -56,19 +58,22 @@ public class EnemyUnit : Unit
 
         Vector2Int targetGrid = grid.WorldToGrid(target.transform.position);
 
-        Vector2Int dir;
+        // ⭐ เช็กว่าผู้เล่นอยู่ในระยะโจมตีหรือไม่
+        int dist = Mathf.Abs(targetGrid.x - myGrid.x) + Mathf.Abs(targetGrid.y - myGrid.y);
 
-        int dx = targetGrid.x - myGrid.x;
-        int dy = targetGrid.y - myGrid.y;
+        if (dist <= attackRange)
+        {
+            // ⭐ อยู่ใน range → highlight ช่อง player เลย
+            grid.HighlightEnemyPreview(targetGrid);
 
-        if (Mathf.Abs(dx) > Mathf.Abs(dy))
-            dir = (dx > 0) ? Vector2Int.right : Vector2Int.left;
+            // ใช้ช่อง player เป็น plannedAttackCell
+            plannedAttackCell = targetGrid;
+        }
         else
-            dir = (dy > 0) ? Vector2Int.up : Vector2Int.down;
-
-        plannedAttackCell = myGrid + dir;
-
-        grid.HighlightEnemyPreview(plannedAttackCell);
+        {
+            // ⭐ ถ้าไม่ในระยะ → ไม่มี preview เลย (หรือจะทำ preview ปกติทิศเดียวก็ได้)
+            //grid.HighlightEnemyPreview(myGrid + Vector2Int.up); // optional
+        }
     }
 
     virtual public void ExecutePlannedAttack()
@@ -124,6 +129,11 @@ public class EnemyUnit : Unit
         Vector2Int nextStep = path[maxStep - 1];
 
         characterMovement.MoveToGrid(nextStep);
+
+        if (anim != null)
+        {
+            anim.SetBool("IsMoving", true);
+        }
 
         Debug.Log($"{name} moves up to {maxStep} tiles → {nextStep}");
     }

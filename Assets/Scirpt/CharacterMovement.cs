@@ -28,6 +28,16 @@ public class CharacterMovement : MonoBehaviour
         if (path.Count > 0)
         {
             Vector3 target = path.Peek();
+
+            Vector3 dir = (target - transform.position);
+            dir.y = 0;
+
+            if (dir.sqrMagnitude > 0.001f)
+            {
+                Quaternion look = Quaternion.LookRotation(dir);
+                transform.rotation = Quaternion.Slerp(transform.rotation, look, Time.deltaTime * 10f);
+            }
+
             transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
 
             Vector2 cur2 = new Vector2(transform.position.x, transform.position.z);
@@ -72,18 +82,22 @@ public class CharacterMovement : MonoBehaviour
         // เดินทีละช่อง (4 ทิศแบบง่าย: x แล้ว z)
         while (start.x != end.x)
         {
+
             start.x += (end.x > start.x) ? 1 : -1;
             Vector3 wp = GridManager.Instance.GridToWorld(start);
             wp.y = unitHeight;
             path.Enqueue(wp);
+
         }
 
         while (start.y != end.y)
         {
+
             start.y += (end.y > start.y) ? 1 : -1;
             Vector3 wp = GridManager.Instance.GridToWorld(start);
             wp.y = unitHeight;
             path.Enqueue(wp);
+
         }
 
         if (path.Count > 0) isMoving = true;

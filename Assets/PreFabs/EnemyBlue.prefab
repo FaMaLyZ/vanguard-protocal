@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1432925447896618147}
   - component: {fileID: 8243459847037996862}
   m_Layer: 7
-  m_Name: EnemyPrefab
+  m_Name: EnemyBlue
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e29c3970bd34ed54aad1a4a86a30eac9, type: 2}
+  - {fileID: 2100000, guid: f18fc62d3cf37394fa8cf6d168a6c2c5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -130,8 +130,8 @@ MonoBehaviour:
   attackDamage: 1
   moveSpeed: 5
   hasTakenAction: 0
-  attackRange: 1
-  characterMovement: {fileID: 0}
+  attackRange: 7
+  characterMovement: {fileID: 1432925447896618147}
 --- !u!114 &1432925447896618147
 MonoBehaviour:
   m_ObjectHideFlags: 0

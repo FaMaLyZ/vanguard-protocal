@@ -1,13 +1,20 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
+
+[System.Serializable]
+public struct ObstacleSpawnData
+{
+    public GameObject obstaclePrefab;
+    public Vector2Int gridPos;
+}
 
 public class ObstacleSpawner : MonoBehaviour
 {
-    public GameObject obstaclePrefab;
     public float obstacleHeight = 1.5f;
 
-    // 💡 Dev สามารถกำหนดตำแหน่ง Obstacle เองใน Inspector
-    public List<Vector2Int> fixedObstaclePositions = new List<Vector2Int>();
+    // ⭐ ต้องมีบรรทัดนี้
+    public List<ObstacleSpawnData> obstacleSpawns = new List<ObstacleSpawnData>();
 
     void Start()
     {
@@ -18,8 +25,16 @@ public class ObstacleSpawner : MonoBehaviour
     {
         var grid = GridManager.Instance;
 
-        foreach (var pos in fixedObstaclePositions)
+        foreach (var spawn in obstacleSpawns)
         {
+            if (spawn.obstaclePrefab == null)
+            {
+                Debug.LogWarning("Obstacle prefab is missing in spawn list.");
+                continue;
+            }
+
+            Vector2Int pos = spawn.gridPos;
+
             if (!grid.InBounds(pos))
             {
                 Debug.LogWarning($"Obstacle position {pos} is out of grid!");
@@ -35,11 +50,12 @@ public class ObstacleSpawner : MonoBehaviour
             Vector3 worldPos = grid.GridToWorld(pos);
             worldPos.y = obstacleHeight;
 
-            GameObject obj = Instantiate(obstaclePrefab, worldPos, Quaternion.identity);
+            Quaternion rot = Quaternion.Euler(-90, 0, 0);
+            GameObject obj = Instantiate(spawn.obstaclePrefab, worldPos, rot);
 
             grid.OccupyWithObstacle(pos, obj);
         }
 
-        Debug.Log($"Spawned {fixedObstaclePositions.Count} fixed obstacles.");
+        Debug.Log($"Spawned {obstacleSpawns.Count} obstacles.");
     }
 }

@@ -128,6 +128,11 @@ public class GameManager : MonoBehaviour
 
             enemy.DoMovePhase();
             yield return enemy.characterMovement.WaitUntilMoveFinish();
+
+            if (enemy.anim != null)
+            {
+                enemy.anim.SetBool("IsMoving", false);
+            }
             yield return new WaitForSeconds(0.2f);
         }
     }
