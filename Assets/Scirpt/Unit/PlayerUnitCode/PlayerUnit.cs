@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PlayerUnit : Unit
 {
-    [Header("Dependencies")]
+    [Header("Attack Settings")]
     public GameObject projectilePrefab;
     public CharacterMovement characterMovement;
     public int movementRange = 3;
@@ -29,33 +29,22 @@ public class PlayerUnit : Unit
 
         if (projectilePrefab == null)
         {
-            Debug.LogError("Projectile Prefab missing on " + name);
+            Debug.LogError("Projectile prefab missing on " + name);
             return;
         }
 
-        // ยิงปกติแบบ base
+        // ยิงกระสุน
         FireProjectile(target);
+
         hasTakenAction = true;
     }
     protected void FireProjectile(EnemyUnit target)
     {
-        Vector3 origin = transform.position + Vector3.up * 1.0f;
-        Vector3 targetPos = target.transform.position + Vector3.up * 1.0f;
-        Vector3 dir = (targetPos - origin).normalized;
-        float dist = Vector3.Distance(origin, targetPos);
+        Vector3 origin = transform.position + Vector3.up * 1f;
+        GameObject projGO = Instantiate(projectilePrefab, origin, Quaternion.identity);
 
-        if (Physics.Raycast(origin, dir, out RaycastHit hitInfo, dist))
-        {
-            if (hitInfo.collider != null)
-            {
-                if (hitInfo.collider.GetComponent<EnemyUnit>() != target)
-                    return;
-            }
-        }
-
-        GameObject projectileGO = Instantiate(projectilePrefab, origin, Quaternion.identity);
-        Projectile projectile = projectileGO.GetComponent<Projectile>();
-        projectile.Initialize(target, attackDamage);
+        Projectile proj = projGO.GetComponent<Projectile>();
+        proj.Initialize(target, this);
     }
 
 
@@ -67,7 +56,11 @@ public class PlayerUnit : Unit
         characterMovement.MoveToGrid(grid);
         hasTakenAction = true;
     }
-
+    public virtual void OnProjectileImpact(EnemyUnit target)
+    {
+        // default = ยิงธรรมดา 1 dmg
+        target.TakeDamage(attackDamage);
+    }
     public void MoveToGrid(Vector2Int grid)
     {
         if (hasTakenAction || GameManager.Instance.CurrentState != GameState.PlayerTurn) return;

@@ -2,60 +2,39 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    private Unit _target;
-    private int _damage;
-    private float _speed = 15f;
+    public float speed = 10f;
 
-    public System.Action<EnemyUnit> OnHitEnemy;   // สำหรับ Desert / Violet / Crimson
+    private EnemyUnit target;
+    private PlayerUnit owner;
 
-    public void Initialize(Unit target, int damage)
+    public void Initialize(EnemyUnit target, PlayerUnit owner)
     {
-        _target = target;
-        _damage = damage;
+        this.target = target;
+        this.owner = owner;
     }
 
     void Update()
     {
-        if (_target == null)
+        if (target == null)
         {
             Destroy(gameObject);
             return;
         }
 
-        Vector3 dir = (_target.transform.position - transform.position);
-        float step = _speed * Time.deltaTime;
+        Vector3 dir = (target.transform.position - transform.position).normalized;
+        transform.position += dir * speed * Time.deltaTime;
 
-        // --------------------------
-        // ตรวจ obstacle (ไม่ทำ damage)
-        // --------------------------
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, dir.normalized, out hit, step + 0.01f))
+        if (Vector3.Distance(transform.position, target.transform.position) < 0.2f)
         {
-            if (hit.collider.GetComponent<Obstacle>() != null)
-            {
-                Debug.Log("Projectile hit obstacle and is destroyed.");
-                Destroy(gameObject);
-                return;
-            }
+            OnHitTarget();
         }
+    }
 
-        // --------------------------
-        // เคลื่อน projectile
-        // --------------------------
-        transform.position += dir.normalized * step;
+    private void OnHitTarget()
+    {
+        if (owner != null && target != null)
+            owner.OnProjectileImpact(target);
 
-        // --------------------------
-        // ชนเป้าหมายจริง (impact frame)
-        // --------------------------
-        if (Vector3.Distance(transform.position, _target.transform.position) <= 0.3f)
-        {
-            // เรียก effect ก่อน damage
-            OnHitEnemy?.Invoke(_target as EnemyUnit);
-
-            // damage หลังชน
-            _target.TakeDamage(_damage);
-
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
 }

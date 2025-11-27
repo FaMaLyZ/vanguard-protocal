@@ -1,24 +1,26 @@
 using UnityEngine;
 
-public class CrimsonUnit : PlayerUnit
+public class PlayerCrimson : PlayerUnit
 {
-    public int explosionRadius = 1; // 3x3
+    public int aoeRadius = 1;
 
-    public override void Attack(EnemyUnit target)
+    public override void OnProjectileImpact(EnemyUnit target)
     {
-        Vector2Int impact = GridPos(target.transform.position);
+        Vector2Int center = GridPos(target.transform.position);
 
-        for (int dx = -explosionRadius; dx <= explosionRadius; dx++)
-            for (int dz = -explosionRadius; dz <= explosionRadius; dz++)
+        // damage AoE 1 tile รอบตัว (เหมือนเดิม)
+        for (int dx = -aoeRadius; dx <= aoeRadius; dx++)
+        {
+            for (int dz = -aoeRadius; dz <= aoeRadius; dz++)
             {
-                Vector2Int pos = new Vector2Int(impact.x + dx, impact.y + dz);
+                Vector2Int pos = new Vector2Int(center.x + dx, center.y + dz);
 
                 if (GridManager.Instance.occupiedTiles.TryGetValue(pos, out Unit u))
+                {
                     if (u is EnemyUnit e)
-                        e.TakeDamage(attackDamage);
+                        e.TakeDamage(this.attackDamage);
+                }
             }
-
-        // ยิงปกติเป็น visual
-        base.Attack(target);
+        }
     }
 }

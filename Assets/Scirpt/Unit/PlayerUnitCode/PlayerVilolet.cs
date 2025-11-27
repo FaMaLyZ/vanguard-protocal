@@ -1,12 +1,13 @@
 using UnityEngine;
 
-public class VioletUnit : PlayerUnit
+public class PlayerVilolet : PlayerUnit
 {
-    public override void Attack(EnemyUnit target)
+    public override void OnProjectileImpact(EnemyUnit target)
     {
         Vector2Int center = GridPos(target.transform.position);
 
         for (int dx = -1; dx <= 1; dx++)
+        {
             for (int dz = -1; dz <= 1; dz++)
             {
                 Vector2Int pos = new Vector2Int(center.x + dx, center.y + dz);
@@ -15,29 +16,28 @@ public class VioletUnit : PlayerUnit
                 {
                     if (u is EnemyUnit e)
                     {
-                        Vector2Int pullDir = center - pos;     // ดึงเข้าหาศูนย์กลาง
+                        Vector2Int pullDir = center - pos;
                         PullEnemy(e, pullDir);
                     }
                 }
             }
+        }
 
-        base.Attack(target);
+        // Violet ยังทำ damage ปกติให้ target
+        target.TakeDamage(this.attackDamage);
     }
 
     void PullEnemy(EnemyUnit enemy, Vector2Int dir)
     {
-        Vector2Int enemyCurrentPos = GridPos(enemy.transform.position);
-        Vector2Int newPos = enemyCurrentPos + dir;
+        Vector2Int cur = GridPos(enemy.transform.position);
+        Vector2Int newPos = cur + dir;
 
-
-        // ขยับศัตรูแบบปลอดภัย
         if (GridManager.Instance.IsTileFree(newPos))
         {
-            enemy.ForceMoveTo(newPos);     // <<< ใช้อันนี้แทนทั้งหมด
+            enemy.ForceMoveTo(newPos);
         }
         else
         {
-            // ชนตัวอื่น = ทำอะไรเพิ่มได้ เช่น damage
             if (GridManager.Instance.occupiedTiles.TryGetValue(newPos, out Unit hit))
             {
                 if (hit is EnemyUnit e)

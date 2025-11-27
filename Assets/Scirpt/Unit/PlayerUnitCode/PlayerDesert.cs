@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class DesertUnit : PlayerUnit
+public class PlayerDesert : PlayerUnit
 {
-    public override void Attack(EnemyUnit target)
+    public override void OnProjectileImpact(EnemyUnit target)
     {
         Vector2Int my = GridPos(transform.position);
         Vector2Int tgt = GridPos(target.transform.position);
@@ -16,20 +16,21 @@ public class DesertUnit : PlayerUnit
 
         if (GridManager.Instance.IsTileFree(pushedTo))
         {
-            // move enemy 1 tile
+            // ดัน 1 ช่อง
             target.ForceMoveTo(pushedTo);
         }
         else
         {
-            // collision damage
-            if (GridManager.Instance.occupiedTiles.TryGetValue(pushedTo, out Unit u))
+            // ชนศัตรู = damage +1
+            if (GridManager.Instance.occupiedTiles.TryGetValue(pushedTo, out Unit hit))
             {
-                if (u is EnemyUnit e)
+                if (hit is EnemyUnit e)
                     e.TakeDamage(1);
             }
         }
 
-        base.Attack(target);
+        // Desert ทำ damage ใหญ่ 1 hit ปกติด้วย
+        target.TakeDamage(this.attackDamage);
     }
 
 }
